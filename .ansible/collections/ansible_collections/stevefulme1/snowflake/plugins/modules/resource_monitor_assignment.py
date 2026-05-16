@@ -8,27 +8,23 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: resource_monitor_assignment
+short_description: Assign a resource monitor to a warehouse
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Set or unset a resource monitor on a warehouse.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  warehouse_name:
+    description: Name of the warehouse.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  monitor_name:
+    description: Name of the resource monitor.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Whether to set or unset.
     type: str
     choices: [present, absent]
     default: present
@@ -37,11 +33,10 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Assign resource monitor to warehouse
+  stevefulme1.snowflake.resource_monitor_assignment:
+    warehouse_name: ANALYTICS_WH
+    monitor_name: MONTHLY_MONITOR
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,9 +59,8 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        warehouse_name=dict(type="str", required=True),
+        monitor_name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -78,16 +72,19 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    wh = module.params["warehouse_name"].upper()
+    monitor = module.params["monitor_name"].upper()
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "present":
+        sql = "ALTER WAREHOUSE {0} SET RESOURCE_MONITOR = {1}".format(
+            SnowflakeClient.quote_identifier(wh),
+            SnowflakeClient.quote_identifier(monitor),
+        )
+    else:
+        sql = "ALTER WAREHOUSE {0} UNSET RESOURCE_MONITOR".format(
+            SnowflakeClient.quote_identifier(wh)
+        )
 
     try:
         client = SnowflakeClient(module)

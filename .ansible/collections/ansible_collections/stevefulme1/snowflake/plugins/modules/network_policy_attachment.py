@@ -8,27 +8,27 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: network_policy_attachment
+short_description: Attach a network policy to account or user
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Attach or detach a network policy at the account or user level.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  name:
+    description: Name of the network policy.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  target:
+    description: Attach to C(account) or a specific C(user).
     type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+    choices: [account, user]
+    default: account
+  user_name:
+    description: User name when I(target=user).
     type: str
-    required: true
   state:
-    description: Whether to grant or revoke.
+    description: Whether to attach or detach.
     type: str
     choices: [present, absent]
     default: present
@@ -37,11 +37,10 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Attach network policy to account
+  stevefulme1.snowflake.network_policy_attachment:
+    name: OFFICE_POLICY
+    target: account
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,9 +63,9 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        target=dict(type="str", default="account", choices=["account", "user"]),
+        user_name=dict(type="str"),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -78,16 +77,30 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
+    target = module.params["target"]
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if target == "account":
+        if state == "present":
+            sql = "ALTER ACCOUNT SET NETWORK_POLICY = {0}".format(
+                SnowflakeClient.quote_identifier(name)
+            )
+        else:
+            sql = "ALTER ACCOUNT UNSET NETWORK_POLICY"
+    else:
+        user_name = module.params["user_name"]
+        if not user_name:
+            module.fail_json(msg="user_name is required when target=user")
+        if state == "present":
+            sql = "ALTER USER {0} SET NETWORK_POLICY = {1}".format(
+                SnowflakeClient.quote_identifier(user_name.upper()),
+                SnowflakeClient.quote_identifier(name),
+            )
+        else:
+            sql = "ALTER USER {0} UNSET NETWORK_POLICY".format(
+                SnowflakeClient.quote_identifier(user_name.upper())
+            )
 
     try:
         client = SnowflakeClient(module)

@@ -8,40 +8,42 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: session_policy
+short_description: Manage Snowflake session policies
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Create, alter, or drop a session policy.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
-    type: str
-    required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  name:
+    description: Name of the session policy.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Desired state.
     type: str
     choices: [present, absent]
     default: present
+  session_idle_timeout_mins:
+    description: Idle timeout in minutes.
+    type: int
+    default: 240
+  session_ui_idle_timeout_mins:
+    description: UI idle timeout in minutes.
+    type: int
+    default: 240
+  comment:
+    description: Comment for the policy.
+    type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Create session policy
+  stevefulme1.snowflake.session_policy:
+    name: SHORT_SESSION
+    session_idle_timeout_mins: 30
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +66,11 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
+        session_idle_timeout_mins=dict(type="int", default=240),
+        session_ui_idle_timeout_mins=dict(type="int", default=240),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,16 +81,28 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    props = [
+        "SESSION_IDLE_TIMEOUT_MINS = {0}".format(
+            module.params["session_idle_timeout_mins"]
+        ),
+        "SESSION_UI_IDLE_TIMEOUT_MINS = {0}".format(
+            module.params["session_ui_idle_timeout_mins"]
+        ),
+    ]
+    if module.params.get("comment"):
+        props.append("COMMENT = '{0}'".format(module.params["comment"]))
+
+    if state == "absent":
+        sql = "DROP SESSION POLICY IF EXISTS {0}".format(
+            SnowflakeClient.quote_identifier(name)
+        )
+    else:
+        sql = "CREATE OR REPLACE SESSION POLICY {0} {1}".format(
+            SnowflakeClient.quote_identifier(name), " ".join(props)
+        )
 
     try:
         client = SnowflakeClient(module)

@@ -8,40 +8,31 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: warehouse_resize
+short_description: Resize a Snowflake warehouse
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Change the size of a warehouse using ALTER WAREHOUSE SET WAREHOUSE_SIZE.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  name:
+    description: Name of the warehouse.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  size:
+    description: New warehouse size.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
-    type: str
-    required: true
-  state:
-    description: Whether to grant or revoke.
-    type: str
-    choices: [present, absent]
-    default: present
+    choices: [XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE]
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Resize warehouse to LARGE
+  stevefulme1.snowflake.warehouse_resize:
+    name: ANALYTICS_WH
+    size: LARGE
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +55,23 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        size=dict(
+            type="str",
+            required=True,
+            choices=[
+                "XSMALL",
+                "SMALL",
+                "MEDIUM",
+                "LARGE",
+                "XLARGE",
+                "XXLARGE",
+                "XXXLARGE",
+                "X4LARGE",
+                "X5LARGE",
+                "X6LARGE",
+            ],
+        ),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,15 +82,10 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
-    state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    name = module.params["name"].upper()
+    size = module.params["size"]
+    sql = "ALTER WAREHOUSE {0} SET WAREHOUSE_SIZE = '{1}'".format(
+        SnowflakeClient.quote_identifier(name), size
     )
 
     try:

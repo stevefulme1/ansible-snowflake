@@ -8,40 +8,30 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: account_parameter
+short_description: Set an account-level parameter in Snowflake
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Alter an account parameter using ALTER ACCOUNT SET.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  parameter:
+    description: Parameter name to set.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  value:
+    description: Value to set the parameter to.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
-    type: str
-    required: true
-  state:
-    description: Whether to grant or revoke.
-    type: str
-    choices: [present, absent]
-    default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Set account timezone
+  stevefulme1.snowflake.account_parameter:
+    parameter: TIMEZONE
+    value: "'America/New_York'"
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +54,8 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        parameter=dict(type="str", required=True),
+        value=dict(type="str", required=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,16 +66,9 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
-    state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    param = module.params["parameter"].upper()
+    value = module.params["value"]
+    sql = "ALTER ACCOUNT SET {0} = {1}".format(param, value)
 
     try:
         client = SnowflakeClient(module)

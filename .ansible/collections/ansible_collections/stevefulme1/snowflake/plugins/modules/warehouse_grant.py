@@ -8,22 +8,23 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: warehouse_grant
+short_description: Manage grants on a Snowflake warehouse
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Grant or revoke privileges on a warehouse.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
+  name:
+    description: Name of the warehouse.
+    type: str
+    required: true
   privilege:
     description: Privilege to grant.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
+    choices: [USAGE, OPERATE, MONITOR, MODIFY, ALL PRIVILEGES]
+  role:
     description: Role to grant the privilege to.
     type: str
     required: true
@@ -37,11 +38,11 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Grant USAGE on warehouse to role
+  stevefulme1.snowflake.warehouse_grant:
+    name: ANALYTICS_WH
+    privilege: USAGE
+    role: ANALYST_ROLE
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,12 +65,18 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        privilege=dict(
+            type="str",
+            required=True,
+            choices=["USAGE", "OPERATE", "MONITOR", "MODIFY", "ALL PRIVILEGES"],
+        ),
+        role=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
-    argument_spec.update(snowflake_argument_spec)
+    # Rename the module-level 'role' to avoid conflict with arg_spec 'role'
+    spec = dict(snowflake_argument_spec)
+    argument_spec.update(spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
@@ -78,16 +85,23 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    wh_name = module.params["name"].upper()
+    privilege = module.params["privilege"]
+    target_role = module.params["role"]
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "present":
+        sql = "GRANT {0} ON WAREHOUSE {1} TO ROLE {2}".format(
+            privilege,
+            SnowflakeClient.quote_identifier(wh_name),
+            SnowflakeClient.quote_identifier(target_role),
+        )
+    else:
+        sql = "REVOKE {0} ON WAREHOUSE {1} FROM ROLE {2}".format(
+            privilege,
+            SnowflakeClient.quote_identifier(wh_name),
+            SnowflakeClient.quote_identifier(target_role),
+        )
 
     try:
         client = SnowflakeClient(module)

@@ -8,40 +8,25 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: data_classification
+short_description: Run Snowflake data classification
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Call ASSOCIATE_SEMANTIC_CATEGORY_TAGS to auto-classify columns.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  table:
+    description: Fully qualified table name to classify.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
-    type: str
-    required: true
-  state:
-    description: Whether to grant or revoke.
-    type: str
-    choices: [present, absent]
-    default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Classify a table
+  stevefulme1.snowflake.data_classification:
+    table: MYDB.PUBLIC.CUSTOMERS
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -52,6 +37,10 @@ sql:
   description: The SQL statement executed.
   type: str
   returned: always
+result:
+  description: Classification result from Snowflake.
+  type: list
+  returned: success
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -64,10 +53,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        table=dict(type="str", required=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,25 +64,20 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
-    state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    table = module.params["table"]
+    sql = "CALL ASSOCIATE_SEMANTIC_CATEGORY_TAGS('{0}', EXTRACT_SEMANTIC_CATEGORIES('{0}'))".format(
+        table
     )
 
+    result = []
     try:
         client = SnowflakeClient(module)
         if not module.check_mode:
-            client.execute_ddl(sql)
+            result = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
 
-    module.exit_json(changed=True, sql=sql)
+    module.exit_json(changed=True, sql=sql, result=result)
 
 
 def main():

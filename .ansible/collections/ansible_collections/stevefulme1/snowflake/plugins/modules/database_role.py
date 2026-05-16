@@ -8,40 +8,38 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: database_role
+short_description: Manage Snowflake database roles
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Create or drop a database role.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  name:
+    description: Name of the database role.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  database:
+    description: Database the role belongs to.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Desired state.
     type: str
     choices: [present, absent]
     default: present
+  comment:
+    description: Comment for the role.
+    type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Create a database role
+  stevefulme1.snowflake.database_role:
+    name: DB_READER
+    database: ANALYTICS_DB
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +62,10 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        database=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,16 +76,20 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
+    db = module.params["database"].upper()
     state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    fqn = "{0}.{1}".format(
+        SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name)
     )
+
+    if state == "absent":
+        sql = "DROP DATABASE ROLE IF EXISTS {0}".format(fqn)
+    else:
+        parts = ["CREATE DATABASE ROLE IF NOT EXISTS {0}".format(fqn)]
+        if module.params.get("comment"):
+            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+        sql = " ".join(parts)
 
     try:
         client = SnowflakeClient(module)

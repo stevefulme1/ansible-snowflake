@@ -8,40 +8,35 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: warehouse_parameter
+short_description: Set a parameter on a Snowflake warehouse
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Alter a warehouse parameter using ALTER WAREHOUSE SET.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  name:
+    description: Name of the warehouse.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  parameter:
+    description: Parameter name to set.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
+  value:
+    description: Value to set the parameter to.
     type: str
     required: true
-  state:
-    description: Whether to grant or revoke.
-    type: str
-    choices: [present, absent]
-    default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Set statement timeout on warehouse
+  stevefulme1.snowflake.warehouse_parameter:
+    name: ANALYTICS_WH
+    parameter: STATEMENT_TIMEOUT_IN_SECONDS
+    value: "3600"
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +59,9 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        name=dict(type="str", required=True),
+        parameter=dict(type="str", required=True),
+        value=dict(type="str", required=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,15 +72,11 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
-    state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    name = module.params["name"].upper()
+    param = module.params["parameter"].upper()
+    value = module.params["value"]
+    sql = "ALTER WAREHOUSE {0} SET {1} = {2}".format(
+        SnowflakeClient.quote_identifier(name), param, value
     )
 
     try:

@@ -8,27 +8,27 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: masking_policy_attachment
+short_description: Attach a masking policy to a column
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Set or unset a masking policy on a table column.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  table:
+    description: Fully qualified table name.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  column:
+    description: Column name.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
+  policy:
+    description: Fully qualified masking policy name.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Whether to set or unset.
     type: str
     choices: [present, absent]
     default: present
@@ -37,11 +37,11 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Attach masking policy to column
+  stevefulme1.snowflake.masking_policy_attachment:
+    table: MYDB.PUBLIC.CUSTOMERS
+    column: EMAIL
+    policy: MYDB.GOVERNANCE.EMAIL_MASK
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,9 +64,9 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        table=dict(type="str", required=True),
+        column=dict(type="str", required=True),
+        policy=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -78,16 +78,19 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    table = module.params["table"]
+    column = module.params["column"].upper()
+    policy = module.params["policy"]
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "present":
+        sql = "ALTER TABLE {0} MODIFY COLUMN {1} SET MASKING POLICY {2}".format(
+            table, column, policy
+        )
+    else:
+        sql = "ALTER TABLE {0} MODIFY COLUMN {1} UNSET MASKING POLICY".format(
+            table, column
+        )
 
     try:
         client = SnowflakeClient(module)

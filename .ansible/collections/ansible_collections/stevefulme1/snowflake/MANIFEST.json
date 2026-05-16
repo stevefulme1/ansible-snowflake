@@ -1,0 +1,39 @@
+{
+ "collection_info": {
+  "namespace": "stevefulme1",
+  "name": "snowflake",
+  "version": "1.0.0",
+  "authors": [
+   "Steve Fulmer (@stevefulme1)"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "snowflake",
+   "datawarehouse",
+   "sql",
+   "governance",
+   "datasharing",
+   "cortex",
+   "automation",
+   "cloud"
+  ],
+  "description": "Ansible collection for managing Snowflake data warehouse resources via the SQL REST API.",
+  "license": [
+   "GPL-3.0-or-later"
+  ],
+  "license_file": null,
+  "dependencies": {},
+  "repository": "https://github.com/stevefulme1/ansible-snowflake",
+  "documentation": "https://github.com/stevefulme1/ansible-snowflake",
+  "homepage": "https://github.com/stevefulme1/ansible-snowflake",
+  "issues": "https://github.com/stevefulme1/ansible-snowflake/issues"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "3a1e77e8c862d659fa37d602f5d6f4a5064949b75be0957141f2c7cd6c843de2",
+  "format": 1
+ },
+ "format": 1
+}

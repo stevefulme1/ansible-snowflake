@@ -8,25 +8,27 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: database_role_grant
+short_description: Grant a Snowflake database role
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Grant or revoke a database role to/from a role or user.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  name:
+    description: Name of the database role.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  database:
+    description: Database the role belongs to.
     type: str
     required: true
   to_role:
-    description: Role to grant the privilege to.
+    description: Account role to grant the database role to.
     type: str
-    required: true
+  to_database_role:
+    description: Another database role to grant to.
+    type: str
   state:
     description: Whether to grant or revoke.
     type: str
@@ -37,10 +39,10 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
+- name: Grant database role to account role
+  stevefulme1.snowflake.database_role_grant:
+    name: DB_READER
+    database: ANALYTICS_DB
     to_role: ANALYST_ROLE
     account: myaccount
     user: myuser
@@ -64,30 +66,47 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        database=dict(type="str", required=True),
+        to_role=dict(type="str"),
+        to_database_role=dict(type="str"),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[("private_key", "password")],
-        required_one_of=[("private_key", "password")],
+        mutually_exclusive=[
+            ("private_key", "password"),
+            ("to_role", "to_database_role"),
+        ],
+        required_one_of=[("private_key", "password"), ("to_role", "to_database_role")],
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    db = module.params["database"].upper()
+    role_name = module.params["name"].upper()
     state = module.params["state"]
+    fqn = "{0}.{1}".format(
+        SnowflakeClient.quote_identifier(db),
+        SnowflakeClient.quote_identifier(role_name),
+    )
 
     action = "GRANT" if state == "present" else "REVOKE"
     prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+
+    if module.params.get("to_role"):
+        target = "ROLE {0}".format(
+            SnowflakeClient.quote_identifier(module.params["to_role"].upper())
+        )
+    else:
+        tdb_role = module.params["to_database_role"].upper()
+        target = "DATABASE ROLE {0}.{1}".format(
+            SnowflakeClient.quote_identifier(db),
+            SnowflakeClient.quote_identifier(tdb_role),
+        )
+
+    sql = "{0} DATABASE ROLE {1} {2} {3}".format(action, fqn, prep, target)
 
     try:
         client = SnowflakeClient(module)

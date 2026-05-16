@@ -8,40 +8,45 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: masking_policy
+short_description: Manage Snowflake masking policies
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Create, alter, or drop a dynamic data masking policy.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
-    type: str
-    required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  name:
+    description: Fully qualified name of the masking policy.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Desired state.
     type: str
     choices: [present, absent]
     default: present
+  signature:
+    description: Input signature (e.g. C((val STRING))).
+    type: str
+  returns:
+    description: Return data type (e.g. C(STRING)).
+    type: str
+  body:
+    description: Masking expression body.
+    type: str
+  comment:
+    description: Comment for the policy.
+    type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Create a masking policy
+  stevefulme1.snowflake.masking_policy:
+    name: MYDB.GOVERNANCE.EMAIL_MASK
+    signature: "(val STRING)"
+    returns: STRING
+    body: "CASE WHEN CURRENT_ROLE() IN ('ADMIN') THEN val ELSE '***MASKED***' END"
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +69,12 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
+        signature=dict(type="str"),
+        returns=dict(type="str"),
+        body=dict(type="str"),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -75,19 +82,23 @@ def run_module():
         argument_spec=argument_spec,
         mutually_exclusive=[("private_key", "password")],
         required_one_of=[("private_key", "password")],
+        required_if=[("state", "present", ("signature", "returns", "body"))],
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"]
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "absent":
+        sql = "DROP MASKING POLICY IF EXISTS {0}".format(name)
+    else:
+        parts = ["CREATE OR REPLACE MASKING POLICY {0}".format(name)]
+        parts.append("AS {0}".format(module.params["signature"]))
+        parts.append("RETURNS {0} ->".format(module.params["returns"]))
+        parts.append(module.params["body"])
+        if module.params.get("comment"):
+            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+        sql = " ".join(parts)
 
     try:
         client = SnowflakeClient(module)

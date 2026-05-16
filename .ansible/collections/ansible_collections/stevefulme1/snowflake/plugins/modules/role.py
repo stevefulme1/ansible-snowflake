@@ -8,46 +8,43 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: role
+short_description: Manage Snowflake roles
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Create or drop a Snowflake role.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
-    type: str
-    required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  name:
+    description: Name of the role.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Desired state.
     type: str
     choices: [present, absent]
     default: present
+  comment:
+    description: Comment for the role.
+    type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Create a role
+  stevefulme1.snowflake.role:
+    name: ANALYST_ROLE
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
 """
 
 RETURN = r"""
+role:
+  description: Name of the role managed.
+  type: str
+  returned: always
 sql:
   description: The SQL statement executed.
   type: str
@@ -62,12 +59,16 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 )
 
 
+def role_exists(client, name):
+    rows = client.query("SHOW ROLES LIKE '{0}'".format(name))
+    return len(rows) > 0
+
+
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,25 +79,38 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
     state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    changed = False
+    sql = ""
 
     try:
         client = SnowflakeClient(module)
-        if not module.check_mode:
-            client.execute_ddl(sql)
+        exists = role_exists(client, name)
+
+        if state == "absent":
+            if exists:
+                sql = "DROP ROLE IF EXISTS {0}".format(client.quote_identifier(name))
+                changed = True
+                if not module.check_mode:
+                    client.execute_ddl(sql)
+        else:
+            if not exists:
+                parts = [
+                    "CREATE ROLE IF NOT EXISTS {0}".format(
+                        client.quote_identifier(name)
+                    )
+                ]
+                if module.params.get("comment"):
+                    parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+                sql = " ".join(parts)
+                changed = True
+                if not module.check_mode:
+                    client.execute_ddl(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
 
-    module.exit_json(changed=True, sql=sql)
+    module.exit_json(changed=changed, role=name, sql=sql)
 
 
 def main():

@@ -8,27 +8,28 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: row_access_policy_attachment
+short_description: Attach a row access policy to a table
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Add or drop a row access policy on a table.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  table:
+    description: Fully qualified table name.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  policy:
+    description: Fully qualified row access policy name.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
-    type: str
+  on_columns:
+    description: Columns the policy maps to.
+    type: list
+    elements: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Whether to add or drop.
     type: str
     choices: [present, absent]
     default: present
@@ -37,11 +38,11 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Add row access policy to table
+  stevefulme1.snowflake.row_access_policy_attachment:
+    table: MYDB.PUBLIC.ORDERS
+    policy: MYDB.GOVERNANCE.REGION_FILTER
+    on_columns: [REGION]
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,9 +65,9 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        table=dict(type="str", required=True),
+        policy=dict(type="str", required=True),
+        on_columns=dict(type="list", elements="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -78,16 +79,17 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    table = module.params["table"]
+    policy = module.params["policy"]
+    columns = ", ".join(module.params["on_columns"])
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "present":
+        sql = "ALTER TABLE {0} ADD ROW ACCESS POLICY {1} ON ({2})".format(
+            table, policy, columns
+        )
+    else:
+        sql = "ALTER TABLE {0} DROP ROW ACCESS POLICY {1}".format(table, policy)
 
     try:
         client = SnowflakeClient(module)

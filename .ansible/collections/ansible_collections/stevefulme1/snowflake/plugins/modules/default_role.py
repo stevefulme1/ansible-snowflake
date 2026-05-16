@@ -8,40 +8,30 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: default_role
+short_description: Set a user default role in Snowflake
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Alter a user to set their DEFAULT_ROLE.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
+  user_name:
+    description: User whose default role to set.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
+  default_role:
+    description: Role to set as default.
     type: str
     required: true
-  to_role:
-    description: Role to grant the privilege to.
-    type: str
-    required: true
-  state:
-    description: Whether to grant or revoke.
-    type: str
-    choices: [present, absent]
-    default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Set default role for user
+  stevefulme1.snowflake.default_role:
+    user_name: JDOE
+    default_role: ANALYST_ROLE
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +54,8 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        user_name=dict(type="str", required=True),
+        default_role=dict(type="str", required=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,15 +66,10 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
-    state = module.params["state"]
-
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    user_name = module.params["user_name"].upper()
+    role_name = module.params["default_role"].upper()
+    sql = "ALTER USER {0} SET DEFAULT_ROLE = '{1}'".format(
+        SnowflakeClient.quote_identifier(user_name), role_name
     )
 
     try:

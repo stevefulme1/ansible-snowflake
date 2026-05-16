@@ -8,40 +8,45 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: scim_integration
+short_description: Manage Snowflake SCIM security integrations
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Create, alter, or drop a SCIM security integration for user provisioning.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
-  privilege:
-    description: Privilege to grant.
-    type: str
-    required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
-    description: Role to grant the privilege to.
+  name:
+    description: Name of the integration.
     type: str
     required: true
   state:
-    description: Whether to grant or revoke.
+    description: Desired state.
     type: str
     choices: [present, absent]
     default: present
+  scim_client:
+    description: SCIM client type.
+    type: str
+    choices: [OKTA, AZURE, GENERIC]
+    default: GENERIC
+  run_as_role:
+    description: Role used by the SCIM client to provision.
+    type: str
+    default: GENERIC_SCIM_PROVISIONER
+  enabled:
+    description: Whether the integration is enabled.
+    type: bool
+    default: true
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Create SCIM integration
+  stevefulme1.snowflake.scim_integration:
+    name: OKTA_SCIM
+    scim_client: OKTA
+    run_as_role: OKTA_PROVISIONER
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,10 +69,13 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
+        scim_client=dict(
+            type="str", default="GENERIC", choices=["OKTA", "AZURE", "GENERIC"]
+        ),
+        run_as_role=dict(type="str", default="GENERIC_SCIM_PROVISIONER"),
+        enabled=dict(type="bool", default=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -78,16 +86,26 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
     state = module.params["state"]
 
-    action = "GRANT" if state == "present" else "REVOKE"
-    prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    if state == "absent":
+        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(
+            SnowflakeClient.quote_identifier(name)
+        )
+    else:
+        sql = (
+            "CREATE OR REPLACE SECURITY INTEGRATION {0} "
+            "TYPE = SCIM "
+            "SCIM_CLIENT = '{1}' "
+            "RUN_AS_ROLE = '{2}' "
+            "ENABLED = {3}"
+        ).format(
+            SnowflakeClient.quote_identifier(name),
+            module.params["scim_client"],
+            module.params["run_as_role"],
+            str(module.params["enabled"]).upper(),
+        )
 
     try:
         client = SnowflakeClient(module)

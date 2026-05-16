@@ -8,22 +8,23 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_grant
-short_description: Grant privileges to a Snowflake user
+module: database_grant
+short_description: Manage grants on a Snowflake database
 description:
-  - Grant or revoke global privileges on account objects to a user.
+  - Grant or revoke privileges on a database.
 version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 options:
+  name:
+    description: Name of the database.
+    type: str
+    required: true
   privilege:
     description: Privilege to grant.
     type: str
     required: true
-  on:
-    description: Object type and name (e.g. C(DATABASE MYDB)).
-    type: str
-    required: true
-  to_role:
+    choices: [USAGE, MONITOR, CREATE SCHEMA, MODIFY, ALL PRIVILEGES]
+  role:
     description: Role to grant the privilege to.
     type: str
     required: true
@@ -37,11 +38,11 @@ extends_documentation_fragment:
 """
 
 EXAMPLES = r"""
-- name: Grant SELECT on all tables
-  stevefulme1.snowflake.user_grant:
-    privilege: SELECT
-    "on": "ALL TABLES IN SCHEMA MYDB.PUBLIC"
-    to_role: ANALYST_ROLE
+- name: Grant USAGE on database
+  stevefulme1.snowflake.database_grant:
+    name: ANALYTICS_DB
+    privilege: USAGE
+    role: ANALYST_ROLE
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
@@ -64,9 +65,13 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 def run_module():
     argument_spec = dict(
-        privilege=dict(type="str", required=True),
-        on=dict(type="str", required=True),
-        to_role=dict(type="str", required=True),
+        name=dict(type="str", required=True),
+        privilege=dict(
+            type="str",
+            required=True,
+            choices=["USAGE", "MONITOR", "CREATE SCHEMA", "MODIFY", "ALL PRIVILEGES"],
+        ),
+        role=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -78,15 +83,19 @@ def run_module():
         supports_check_mode=True,
     )
 
-    privilege = module.params["privilege"].upper()
-    on = module.params["on"]
-    to_role = module.params["to_role"].upper()
+    name = module.params["name"].upper()
+    privilege = module.params["privilege"]
+    target_role = module.params["role"]
     state = module.params["state"]
 
     action = "GRANT" if state == "present" else "REVOKE"
     prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
+    sql = "{0} {1} ON DATABASE {2} {3} ROLE {4}".format(
+        action,
+        privilege,
+        SnowflakeClient.quote_identifier(name),
+        prep,
+        SnowflakeClient.quote_identifier(target_role),
     )
 
     try:
