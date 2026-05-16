@@ -122,12 +122,14 @@ def run_module():
             )
         if module.params.get("storage_allowed_locations"):
             locs = ", ".join(
-                "'{0}'".format(l) for l in module.params["storage_allowed_locations"]
+                "'{0}'".format(loc)
+                for loc in module.params["storage_allowed_locations"]
             )
             parts.append("STORAGE_ALLOWED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_blocked_locations"):
             locs = ", ".join(
-                "'{0}'".format(l) for l in module.params["storage_blocked_locations"]
+                "'{0}'".format(loc)
+                for loc in module.params["storage_blocked_locations"]
             )
             parts.append("STORAGE_BLOCKED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_aws_role_arn"):

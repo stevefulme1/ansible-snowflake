@@ -11,10 +11,10 @@ license:
 license_file: ''
 tags:
   - snowflake
-  - data-warehouse
+  - datawarehouse
   - sql
   - governance
-  - data-sharing
+  - datasharing
   - cortex
   - automation
 dependencies: {}
@@ -27,4 +27,3 @@ build_ignore:
   - tests
   - changelogs
   - extensions
-requires_ansible: '>=2.16.0'

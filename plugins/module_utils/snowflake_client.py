@@ -172,9 +172,6 @@ class SnowflakeClient(object):
 
     def _headers(self):
         """Return common request headers."""
-        auth_scheme = "Bearer" if self.password else "Bearer"
-        if self.private_key:
-            auth_scheme = "Bearer"
         return {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -296,7 +293,6 @@ class SnowflakeClient(object):
         elapsed = 0
         while elapsed < self.MAX_POLL_SECONDS:
             status, result = self._request(url, method="GET")
-            query_status = result.get("statementStatusUrl", "")
             code = result.get("code", "0")
 
             # Success
