@@ -17,6 +17,7 @@ tags:
   - datasharing
   - cortex
   - automation
+  - cloud
 dependencies: {}
 repository: https://github.com/stevefulme1/ansible-snowflake
 documentation: https://github.com/stevefulme1/ansible-snowflake
