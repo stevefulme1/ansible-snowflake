@@ -66,7 +66,6 @@ from datetime import datetime, timezone
 
 try:
     from urllib.request import Request, urlopen
-    from urllib.error import HTTPError, URLError  # noqa: F401
 except ImportError:
     pass
 
