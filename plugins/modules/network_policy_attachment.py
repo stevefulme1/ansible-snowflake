@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: network_policy_attachment
 short_description: Attach a network policy to account or user
@@ -33,9 +34,9 @@ options:
     default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Attach network policy to account
   stevefulme1.snowflake.network_policy_attachment:
     name: OFFICE_POLICY
@@ -43,58 +44,63 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        target=dict(type='str', default='account', choices=['account', 'user']),
-        user_name=dict(type='str'),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
+        name=dict(type="str", required=True),
+        target=dict(type="str", default="account", choices=["account", "user"]),
+        user_name=dict(type="str"),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    target = module.params['target']
-    state = module.params['state']
+    name = module.params["name"].upper()
+    target = module.params["target"]
+    state = module.params["state"]
 
-    if target == 'account':
-        if state == 'present':
+    if target == "account":
+        if state == "present":
             sql = "ALTER ACCOUNT SET NETWORK_POLICY = {0}".format(
-                SnowflakeClient.quote_identifier(name))
+                SnowflakeClient.quote_identifier(name)
+            )
         else:
             sql = "ALTER ACCOUNT UNSET NETWORK_POLICY"
     else:
-        user_name = module.params['user_name']
+        user_name = module.params["user_name"]
         if not user_name:
-            module.fail_json(msg='user_name is required when target=user')
-        if state == 'present':
+            module.fail_json(msg="user_name is required when target=user")
+        if state == "present":
             sql = "ALTER USER {0} SET NETWORK_POLICY = {1}".format(
                 SnowflakeClient.quote_identifier(user_name.upper()),
-                SnowflakeClient.quote_identifier(name))
+                SnowflakeClient.quote_identifier(name),
+            )
         else:
             sql = "ALTER USER {0} UNSET NETWORK_POLICY".format(
-                SnowflakeClient.quote_identifier(user_name.upper()))
+                SnowflakeClient.quote_identifier(user_name.upper())
+            )
 
     try:
         client = SnowflakeClient(module)
@@ -110,5 +116,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

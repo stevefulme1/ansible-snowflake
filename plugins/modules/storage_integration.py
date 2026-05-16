@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: storage_integration
 short_description: Manage Snowflake storage integrations
@@ -50,9 +51,9 @@ options:
     type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create S3 storage integration
   stevefulme1.snowflake.storage_integration:
     name: S3_INT
@@ -63,68 +64,86 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        storage_provider=dict(type='str', choices=['S3', 'GCS', 'AZURE']),
-        storage_allowed_locations=dict(type='list', elements='str'),
-        storage_blocked_locations=dict(type='list', elements='str'),
-        storage_aws_role_arn=dict(type='str'),
-        azure_tenant_id=dict(type='str'),
-        enabled=dict(type='bool', default=True),
-        comment=dict(type='str'),
+        name=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        storage_provider=dict(type="str", choices=["S3", "GCS", "AZURE"]),
+        storage_allowed_locations=dict(type="list", elements="str"),
+        storage_blocked_locations=dict(type="list", elements="str"),
+        storage_aws_role_arn=dict(type="str"),
+        azure_tenant_id=dict(type="str"),
+        enabled=dict(type="bool", default=True),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    state = module.params['state']
+    name = module.params["name"].upper()
+    state = module.params["state"]
 
-    if state == 'absent':
-        sql = 'DROP STORAGE INTEGRATION IF EXISTS {0}'.format(
-            SnowflakeClient.quote_identifier(name))
+    if state == "absent":
+        sql = "DROP STORAGE INTEGRATION IF EXISTS {0}".format(
+            SnowflakeClient.quote_identifier(name)
+        )
     else:
-        parts = ['CREATE OR REPLACE STORAGE INTEGRATION {0}'.format(
-            SnowflakeClient.quote_identifier(name))]
-        parts.append('TYPE = EXTERNAL_STAGE')
-        if module.params.get('storage_provider'):
-            parts.append("STORAGE_PROVIDER = '{0}'".format(module.params['storage_provider']))
-        if module.params.get('storage_allowed_locations'):
-            locs = ', '.join("'{0}'".format(l) for l in module.params['storage_allowed_locations'])
-            parts.append('STORAGE_ALLOWED_LOCATIONS = ({0})'.format(locs))
-        if module.params.get('storage_blocked_locations'):
-            locs = ', '.join("'{0}'".format(l) for l in module.params['storage_blocked_locations'])
-            parts.append('STORAGE_BLOCKED_LOCATIONS = ({0})'.format(locs))
-        if module.params.get('storage_aws_role_arn'):
-            parts.append("STORAGE_AWS_ROLE_ARN = '{0}'".format(module.params['storage_aws_role_arn']))
-        if module.params.get('azure_tenant_id'):
-            parts.append("AZURE_TENANT_ID = '{0}'".format(module.params['azure_tenant_id']))
-        parts.append('ENABLED = {0}'.format(str(module.params['enabled']).upper()))
-        if module.params.get('comment'):
-            parts.append("COMMENT = '{0}'".format(module.params['comment']))
-        sql = ' '.join(parts)
+        parts = [
+            "CREATE OR REPLACE STORAGE INTEGRATION {0}".format(
+                SnowflakeClient.quote_identifier(name)
+            )
+        ]
+        parts.append("TYPE = EXTERNAL_STAGE")
+        if module.params.get("storage_provider"):
+            parts.append(
+                "STORAGE_PROVIDER = '{0}'".format(module.params["storage_provider"])
+            )
+        if module.params.get("storage_allowed_locations"):
+            locs = ", ".join(
+                "'{0}'".format(l) for l in module.params["storage_allowed_locations"]
+            )
+            parts.append("STORAGE_ALLOWED_LOCATIONS = ({0})".format(locs))
+        if module.params.get("storage_blocked_locations"):
+            locs = ", ".join(
+                "'{0}'".format(l) for l in module.params["storage_blocked_locations"]
+            )
+            parts.append("STORAGE_BLOCKED_LOCATIONS = ({0})".format(locs))
+        if module.params.get("storage_aws_role_arn"):
+            parts.append(
+                "STORAGE_AWS_ROLE_ARN = '{0}'".format(
+                    module.params["storage_aws_role_arn"]
+                )
+            )
+        if module.params.get("azure_tenant_id"):
+            parts.append(
+                "AZURE_TENANT_ID = '{0}'".format(module.params["azure_tenant_id"])
+            )
+        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
+        if module.params.get("comment"):
+            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+        sql = " ".join(parts)
 
     try:
         client = SnowflakeClient(module)
@@ -140,5 +159,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

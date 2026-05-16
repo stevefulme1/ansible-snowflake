@@ -4,6 +4,7 @@
 """Unit tests for the warehouse module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible_collections.stevefulme1.snowflake.plugins.modules import warehouse

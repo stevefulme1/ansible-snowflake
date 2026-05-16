@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: saml_integration
 short_description: Manage Snowflake SAML2 security integrations
@@ -43,9 +44,9 @@ options:
     default: true
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create SAML integration
   stevefulme1.snowflake.saml_integration:
     name: OKTA_SSO
@@ -56,59 +57,69 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        saml2_issuer=dict(type='str'),
-        saml2_sso_url=dict(type='str'),
-        saml2_provider=dict(type='str', default='CUSTOM', choices=['CUSTOM', 'OKTA', 'ADFS']),
-        saml2_x509_cert=dict(type='str', no_log=True),
-        enabled=dict(type='bool', default=True),
+        name=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        saml2_issuer=dict(type="str"),
+        saml2_sso_url=dict(type="str"),
+        saml2_provider=dict(
+            type="str", default="CUSTOM", choices=["CUSTOM", "OKTA", "ADFS"]
+        ),
+        saml2_x509_cert=dict(type="str", no_log=True),
+        enabled=dict(type="bool", default=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    state = module.params['state']
+    name = module.params["name"].upper()
+    state = module.params["state"]
 
-    if state == 'absent':
-        sql = 'DROP SECURITY INTEGRATION IF EXISTS {0}'.format(
-            SnowflakeClient.quote_identifier(name))
+    if state == "absent":
+        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(
+            SnowflakeClient.quote_identifier(name)
+        )
     else:
-        parts = ["CREATE OR REPLACE SECURITY INTEGRATION {0}".format(
-            SnowflakeClient.quote_identifier(name))]
+        parts = [
+            "CREATE OR REPLACE SECURITY INTEGRATION {0}".format(
+                SnowflakeClient.quote_identifier(name)
+            )
+        ]
         parts.append("TYPE = SAML2")
-        parts.append("ENABLED = {0}".format(str(module.params['enabled']).upper()))
-        if module.params.get('saml2_issuer'):
-            parts.append("SAML2_ISSUER = '{0}'".format(module.params['saml2_issuer']))
-        if module.params.get('saml2_sso_url'):
-            parts.append("SAML2_SSO_URL = '{0}'".format(module.params['saml2_sso_url']))
-        parts.append("SAML2_PROVIDER = '{0}'".format(module.params['saml2_provider']))
-        if module.params.get('saml2_x509_cert'):
-            parts.append("SAML2_X509_CERT = '{0}'".format(module.params['saml2_x509_cert']))
-        sql = ' '.join(parts)
+        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
+        if module.params.get("saml2_issuer"):
+            parts.append("SAML2_ISSUER = '{0}'".format(module.params["saml2_issuer"]))
+        if module.params.get("saml2_sso_url"):
+            parts.append("SAML2_SSO_URL = '{0}'".format(module.params["saml2_sso_url"]))
+        parts.append("SAML2_PROVIDER = '{0}'".format(module.params["saml2_provider"]))
+        if module.params.get("saml2_x509_cert"):
+            parts.append(
+                "SAML2_X509_CERT = '{0}'".format(module.params["saml2_x509_cert"])
+            )
+        sql = " ".join(parts)
 
     try:
         client = SnowflakeClient(module)
@@ -124,5 +135,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

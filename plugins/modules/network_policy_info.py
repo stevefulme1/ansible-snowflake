@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: network_policy_info
 short_description: List Snowflake network policies
@@ -15,26 +16,28 @@ version_added: "1.0.0"
 author: Steve Fulmer (@stevefulme1)
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: List network policies
   stevefulme1.snowflake.network_policy_info:
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 network_policies:
   description: List of network policy records.
   type: list
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
@@ -44,8 +47,8 @@ def run_module():
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
@@ -62,5 +65,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

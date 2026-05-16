@@ -4,6 +4,7 @@
 """Unit tests for snowflake_client module_utils."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from unittest.mock import MagicMock, patch

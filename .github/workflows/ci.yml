@@ -63,9 +63,11 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install ansible-core pytest
-      - run: >-
-          python -m pytest tests/unit -v --color=yes
+      - name: Run unit tests
         working-directory: ansible_collections/stevefulme1/snowflake
+        run: python -m pytest tests/unit/ -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
   integration:
     name: Integration (mock)

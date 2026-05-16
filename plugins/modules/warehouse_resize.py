@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: warehouse_resize
 short_description: Resize a Snowflake warehouse
@@ -25,9 +26,9 @@ options:
     choices: [XSMALL, SMALL, MEDIUM, LARGE, XLARGE, XXLARGE, XXXLARGE, X4LARGE, X5LARGE, X6LARGE]
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Resize warehouse to LARGE
   stevefulme1.snowflake.warehouse_resize:
     name: ANALYTICS_WH
@@ -35,41 +36,57 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        size=dict(type='str', required=True,
-                  choices=['XSMALL', 'SMALL', 'MEDIUM', 'LARGE', 'XLARGE',
-                           'XXLARGE', 'XXXLARGE', 'X4LARGE', 'X5LARGE', 'X6LARGE']),
+        name=dict(type="str", required=True),
+        size=dict(
+            type="str",
+            required=True,
+            choices=[
+                "XSMALL",
+                "SMALL",
+                "MEDIUM",
+                "LARGE",
+                "XLARGE",
+                "XXLARGE",
+                "XXXLARGE",
+                "X4LARGE",
+                "X5LARGE",
+                "X6LARGE",
+            ],
+        ),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    size = module.params['size']
+    name = module.params["name"].upper()
+    size = module.params["size"]
     sql = "ALTER WAREHOUSE {0} SET WAREHOUSE_SIZE = '{1}'".format(
-        SnowflakeClient.quote_identifier(name), size)
+        SnowflakeClient.quote_identifier(name), size
+    )
 
     try:
         client = SnowflakeClient(module)
@@ -85,5 +102,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

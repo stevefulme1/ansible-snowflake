@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: user
 short_description: Manage Snowflake users
@@ -63,9 +64,9 @@ options:
     type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a user
   stevefulme1.snowflake.user:
     name: JDOE
@@ -74,9 +75,9 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 user:
   description: Name of the user managed.
   type: str
@@ -85,11 +86,13 @@ sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
@@ -100,72 +103,81 @@ def user_exists(client, name):
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        login_name=dict(type='str'),
-        display_name=dict(type='str'),
-        email=dict(type='str'),
-        first_name=dict(type='str'),
-        last_name=dict(type='str'),
-        default_role=dict(type='str'),
-        default_warehouse=dict(type='str'),
-        default_namespace=dict(type='str'),
-        must_change_password=dict(type='bool', default=False),
-        disabled=dict(type='bool', default=False),
-        user_password=dict(type='str', no_log=True),
-        comment=dict(type='str'),
+        name=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        login_name=dict(type="str"),
+        display_name=dict(type="str"),
+        email=dict(type="str"),
+        first_name=dict(type="str"),
+        last_name=dict(type="str"),
+        default_role=dict(type="str"),
+        default_warehouse=dict(type="str"),
+        default_namespace=dict(type="str"),
+        must_change_password=dict(type="bool", default=False),
+        disabled=dict(type="bool", default=False),
+        user_password=dict(type="str", no_log=True),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    state = module.params['state']
+    name = module.params["name"].upper()
+    state = module.params["state"]
     changed = False
-    sql = ''
+    sql = ""
 
     props = []
     for param, sf_prop in [
-        ('login_name', 'LOGIN_NAME'), ('display_name', 'DISPLAY_NAME'),
-        ('email', 'EMAIL'), ('first_name', 'FIRST_NAME'),
-        ('last_name', 'LAST_NAME'), ('default_role', 'DEFAULT_ROLE'),
-        ('default_warehouse', 'DEFAULT_WAREHOUSE'),
-        ('default_namespace', 'DEFAULT_NAMESPACE'),
+        ("login_name", "LOGIN_NAME"),
+        ("display_name", "DISPLAY_NAME"),
+        ("email", "EMAIL"),
+        ("first_name", "FIRST_NAME"),
+        ("last_name", "LAST_NAME"),
+        ("default_role", "DEFAULT_ROLE"),
+        ("default_warehouse", "DEFAULT_WAREHOUSE"),
+        ("default_namespace", "DEFAULT_NAMESPACE"),
     ]:
         if module.params.get(param):
             props.append("{0} = '{1}'".format(sf_prop, module.params[param]))
-    if module.params.get('user_password'):
-        props.append("PASSWORD = '{0}'".format(module.params['user_password']))
-    props.append('MUST_CHANGE_PASSWORD = {0}'.format(str(module.params['must_change_password']).upper()))
-    props.append('DISABLED = {0}'.format(str(module.params['disabled']).upper()))
-    if module.params.get('comment'):
-        props.append("COMMENT = '{0}'".format(module.params['comment']))
+    if module.params.get("user_password"):
+        props.append("PASSWORD = '{0}'".format(module.params["user_password"]))
+    props.append(
+        "MUST_CHANGE_PASSWORD = {0}".format(
+            str(module.params["must_change_password"]).upper()
+        )
+    )
+    props.append("DISABLED = {0}".format(str(module.params["disabled"]).upper()))
+    if module.params.get("comment"):
+        props.append("COMMENT = '{0}'".format(module.params["comment"]))
 
     try:
         client = SnowflakeClient(module)
         exists = user_exists(client, name)
 
-        if state == 'absent':
+        if state == "absent":
             if exists:
-                sql = 'DROP USER IF EXISTS {0}'.format(client.quote_identifier(name))
+                sql = "DROP USER IF EXISTS {0}".format(client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
         else:
             if not exists:
-                sql = 'CREATE USER IF NOT EXISTS {0} {1}'.format(
-                    client.quote_identifier(name), ' '.join(props))
+                sql = "CREATE USER IF NOT EXISTS {0} {1}".format(
+                    client.quote_identifier(name), " ".join(props)
+                )
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
             else:
-                sql = 'ALTER USER {0} SET {1}'.format(
-                    client.quote_identifier(name), ' '.join(props))
+                sql = "ALTER USER {0} SET {1}".format(
+                    client.quote_identifier(name), " ".join(props)
+                )
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
@@ -179,5 +191,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

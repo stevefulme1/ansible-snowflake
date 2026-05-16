@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: account_parameter
 short_description: Set an account-level parameter in Snowflake
@@ -24,9 +25,9 @@ options:
     required: true
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Set account timezone
   stevefulme1.snowflake.account_parameter:
     parameter: TIMEZONE
@@ -34,38 +35,40 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        parameter=dict(type='str', required=True),
-        value=dict(type='str', required=True),
+        parameter=dict(type="str", required=True),
+        value=dict(type="str", required=True),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    param = module.params['parameter'].upper()
-    value = module.params['value']
-    sql = 'ALTER ACCOUNT SET {0} = {1}'.format(param, value)
+    param = module.params["parameter"].upper()
+    value = module.params["value"]
+    sql = "ALTER ACCOUNT SET {0} = {1}".format(param, value)
 
     try:
         client = SnowflakeClient(module)
@@ -81,5 +84,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

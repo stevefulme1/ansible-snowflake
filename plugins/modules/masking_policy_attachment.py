@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: masking_policy_attachment
 short_description: Attach a masking policy to a column
@@ -33,9 +34,9 @@ options:
     default: present
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Attach masking policy to column
   stevefulme1.snowflake.masking_policy_attachment:
     table: MYDB.PUBLIC.CUSTOMERS
@@ -44,47 +45,52 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        table=dict(type='str', required=True),
-        column=dict(type='str', required=True),
-        policy=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
+        table=dict(type="str", required=True),
+        column=dict(type="str", required=True),
+        policy=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    table = module.params['table']
-    column = module.params['column'].upper()
-    policy = module.params['policy']
-    state = module.params['state']
+    table = module.params["table"]
+    column = module.params["column"].upper()
+    policy = module.params["policy"]
+    state = module.params["state"]
 
-    if state == 'present':
-        sql = 'ALTER TABLE {0} MODIFY COLUMN {1} SET MASKING POLICY {2}'.format(
-            table, column, policy)
+    if state == "present":
+        sql = "ALTER TABLE {0} MODIFY COLUMN {1} SET MASKING POLICY {2}".format(
+            table, column, policy
+        )
     else:
-        sql = 'ALTER TABLE {0} MODIFY COLUMN {1} UNSET MASKING POLICY'.format(table, column)
+        sql = "ALTER TABLE {0} MODIFY COLUMN {1} UNSET MASKING POLICY".format(
+            table, column
+        )
 
     try:
         client = SnowflakeClient(module)
@@ -100,5 +106,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

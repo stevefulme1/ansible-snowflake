@@ -3,9 +3,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: database_role
 short_description: Manage Snowflake database roles
@@ -32,9 +33,9 @@ options:
     type: str
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a database role
   stevefulme1.snowflake.database_role:
     name: DB_READER
@@ -42,49 +43,53 @@ EXAMPLES = r'''
     account: myaccount
     user: myuser
     private_key: "{{ private_key }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient, SnowflakeError, snowflake_argument_spec,
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
 )
 
 
 def run_module():
     argument_spec = dict(
-        name=dict(type='str', required=True),
-        database=dict(type='str', required=True),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
-        comment=dict(type='str'),
+        name=dict(type="str", required=True),
+        database=dict(type="str", required=True),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[('private_key', 'password')],
-        required_one_of=[('private_key', 'password')],
+        mutually_exclusive=[("private_key", "password")],
+        required_one_of=[("private_key", "password")],
         supports_check_mode=True,
     )
 
-    name = module.params['name'].upper()
-    db = module.params['database'].upper()
-    state = module.params['state']
-    fqn = '{0}.{1}'.format(SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name))
+    name = module.params["name"].upper()
+    db = module.params["database"].upper()
+    state = module.params["state"]
+    fqn = "{0}.{1}".format(
+        SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name)
+    )
 
-    if state == 'absent':
-        sql = 'DROP DATABASE ROLE IF EXISTS {0}'.format(fqn)
+    if state == "absent":
+        sql = "DROP DATABASE ROLE IF EXISTS {0}".format(fqn)
     else:
-        parts = ['CREATE DATABASE ROLE IF NOT EXISTS {0}'.format(fqn)]
-        if module.params.get('comment'):
-            parts.append("COMMENT = '{0}'".format(module.params['comment']))
-        sql = ' '.join(parts)
+        parts = ["CREATE DATABASE ROLE IF NOT EXISTS {0}".format(fqn)]
+        if module.params.get("comment"):
+            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+        sql = " ".join(parts)
 
     try:
         client = SnowflakeClient(module)
@@ -100,5 +105,5 @@ def main():
     run_module()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
