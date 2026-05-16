@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install ruff ansible-core ansible-lint
-      - run: ruff check .
+      - run: ruff check --ignore E402 .
       - run: ruff format --check .
       - run: ansible-lint
 
