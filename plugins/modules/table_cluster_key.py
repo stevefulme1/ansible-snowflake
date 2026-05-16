@@ -72,7 +72,7 @@ def run_module():
         table_name=dict(type="str", required=True),
         schema_name=dict(type="str", required=True),
         database_name=dict(type="str", required=True),
-        cluster_keys=dict(type="list", elements="str"),
+        cluster_keys=dict(type="list", elements="str", no_log=False),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
