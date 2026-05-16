@@ -64,7 +64,8 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 
 def run_module():
-    argument_spec = dict(
+    argument_spec = dict(snowflake_argument_spec)
+    argument_spec.update(
         name=dict(type="str", required=True),
         privilege=dict(
             type="str",
@@ -74,9 +75,6 @@ def run_module():
         role=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
     )
-    # Rename the module-level 'role' to avoid conflict with arg_spec 'role'
-    spec = dict(snowflake_argument_spec)
-    argument_spec.update(spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,

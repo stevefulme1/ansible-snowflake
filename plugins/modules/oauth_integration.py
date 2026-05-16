@@ -94,7 +94,7 @@ def run_module():
         ),
         oauth_redirect_uri=dict(type="str"),
         oauth_issue_refresh_tokens=dict(type="bool", default=True),
-        oauth_refresh_token_validity=dict(type="int", default=7776000),
+        oauth_refresh_token_validity=dict(type="int", default=7776000, no_log=False),
         enabled=dict(type="bool", default=True),
     )
     argument_spec.update(snowflake_argument_spec)

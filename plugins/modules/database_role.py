@@ -61,13 +61,13 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 
 
 def run_module():
-    argument_spec = dict(
+    argument_spec = dict(snowflake_argument_spec)
+    argument_spec.update(
         name=dict(type="str", required=True),
         database=dict(type="str", required=True),
         state=dict(type="str", default="present", choices=["present", "absent"]),
         comment=dict(type="str"),
     )
-    argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,

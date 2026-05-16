@@ -19,7 +19,7 @@ options:
     description: Privilege to grant.
     type: str
     required: true
-  on:
+  "on":
     description: Object type and name (e.g. C(DATABASE MYDB)).
     type: str
     required: true
