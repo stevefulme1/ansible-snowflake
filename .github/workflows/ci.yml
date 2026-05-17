@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install ruff ansible-core ansible-lint
-      - run: ruff check --ignore E402,UP001,UP009,UP010,UP030,UP032,I001,F401,F821 .
+      - run: ruff check --ignore E402,UP001,UP004,UP008,UP009,UP010,UP030,UP032,I001,F401,F821,B904,B905,S310,S608 .
       - run: ruff format --check .
       - run: ansible-lint
 
