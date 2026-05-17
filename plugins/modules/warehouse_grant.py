@@ -50,14 +50,19 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-from ansible.module_utils.basic import AnsibleModule
 sql:
   description: The SQL statement executed.
   type: str
   returned: always
 """
+
+
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 
 def run_module():

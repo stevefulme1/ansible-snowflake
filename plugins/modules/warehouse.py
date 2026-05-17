@@ -80,9 +80,6 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-from ansible.module_utils.basic import AnsibleModule
 warehouse:
   description: Name of the warehouse managed.
   type: str

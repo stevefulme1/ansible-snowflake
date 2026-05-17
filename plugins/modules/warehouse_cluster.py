@@ -47,9 +47,6 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
-
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-from ansible.module_utils.basic import AnsibleModule
 sql:
   description: The SQL statement executed.
   type: str
