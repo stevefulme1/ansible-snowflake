@@ -4,14 +4,6 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-from ansible.module_utils.basic import AnsibleModule
-
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -63,6 +55,14 @@ schemas:
   type: list
   returned: always
 """
+
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 
 def run_module():
