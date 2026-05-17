@@ -1,0 +1,34 @@
+---
+# Required
+# wh_name: ""
+
+# Snowflake connection
+sf_account: "{{ lookup('env', 'SNOWFLAKE_ACCOUNT') }}"
+sf_user: "{{ lookup('env', 'SNOWFLAKE_USER') }}"
+sf_password: "{{ lookup('env', 'SNOWFLAKE_PASSWORD') }}"
+sf_role: "SYSADMIN"
+
+# Warehouse settings
+wh_size: "XSMALL"  # XSMALL, SMALL, MEDIUM, LARGE, XLARGE, 2XLARGE, 3XLARGE, 4XLARGE
+wh_type: "STANDARD"  # STANDARD or SNOWPARK-OPTIMIZED
+wh_auto_suspend: 300
+wh_auto_resume: true
+wh_min_cluster_count: 1
+wh_max_cluster_count: 1
+wh_scaling_policy: "STANDARD"  # STANDARD or ECONOMY
+wh_initially_suspended: true
+wh_comment: "Managed by Ansible"
+wh_state: present
+
+# Resource monitors
+wh_resource_monitor_enabled: false
+wh_resource_monitor_name: ""
+wh_credit_quota: 100
+wh_monitor_notify_percent: 75
+wh_monitor_suspend_percent: 95
+wh_monitor_suspend_immediately_percent: 100
+
+# Tags
+wh_tags: {}
+#   environment: "production"
+#   team: "analytics"

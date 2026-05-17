@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  role_name: database_provision
+  author: Red Hat Ansible
+  description: Provision Snowflake databases, schemas, and access grants
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions: [8, 9]
+  galaxy_tags: [snowflake, cloud, database, schema, grants]
+dependencies: []

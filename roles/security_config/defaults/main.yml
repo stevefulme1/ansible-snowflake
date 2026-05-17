@@ -1,0 +1,60 @@
+---
+# Snowflake connection
+sf_account: "{{ lookup('env', 'SNOWFLAKE_ACCOUNT') }}"
+sf_user: "{{ lookup('env', 'SNOWFLAKE_USER') }}"
+sf_password: "{{ lookup('env', 'SNOWFLAKE_PASSWORD') }}"
+sf_role: "SECURITYADMIN"
+
+# Network policies
+sec_network_policies: []
+#   - name: "CORP_NETWORK"
+#     allowed_ip_list:
+#       - "10.0.0.0/8"
+#       - "172.16.0.0/12"
+#     blocked_ip_list: []
+#     comment: "Corporate network access"
+
+# Account-level network policy
+sec_account_network_policy: ""
+
+# Roles
+sec_roles: []
+#   - name: "DATA_ENGINEER"
+#     comment: "Data engineering role"
+#     granted_to_roles:
+#       - "SYSADMIN"
+#   - name: "DATA_ANALYST"
+#     comment: "Read-only analyst role"
+#     granted_to_roles:
+#       - "SYSADMIN"
+
+# Users
+sec_users: []
+#   - name: "JOHN_DOE"
+#     login_name: "john.doe@example.com"
+#     default_role: "DATA_ANALYST"
+#     default_warehouse: "ANALYTICS_WH"
+#     must_change_password: true
+#     disabled: false
+
+# MFA
+sec_mfa_enforced_roles: []
+#   - "ACCOUNTADMIN"
+#   - "SECURITYADMIN"
+
+# Session policies
+sec_session_idle_timeout: 3600
+sec_session_ui_idle_timeout: 1800
+
+# Password policy
+sec_password_policy_enabled: true
+sec_password_min_length: 14
+sec_password_max_length: 256
+sec_password_min_upper: 1
+sec_password_min_lower: 1
+sec_password_min_numeric: 1
+sec_password_min_special: 1
+sec_password_max_age_days: 90
+sec_password_max_retries: 5
+sec_password_lockout_time_mins: 15
+sec_password_history: 5

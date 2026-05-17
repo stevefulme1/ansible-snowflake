@@ -1,0 +1,123 @@
+---
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - pipeline_database is defined and pipeline_database | length > 0
+      - pipeline_schema is defined and pipeline_schema | length > 0
+    fail_msg: "Required variables: pipeline_database, pipeline_schema"
+
+- name: Configure data pipeline
+  block:
+    - name: Create file formats
+      snowflake.snowflake.execute_sql:
+        sql: >-
+          CREATE OR REPLACE FILE FORMAT {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
+          TYPE = '{{ item.type }}'
+          {% if item.type == 'JSON' %}
+          STRIP_OUTER_ARRAY = {{ item.strip_outer_array | default(false) | upper }}
+          {% elif item.type == 'CSV' %}
+          FIELD_DELIMITER = '{{ item.field_delimiter | default(",") }}'
+          SKIP_HEADER = {{ item.skip_header | default(0) }}
+          {% endif %}
+          COMPRESSION = '{{ item.compression | default("AUTO") }}'
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        warehouse: "{{ sf_warehouse }}"
+      loop: "{{ pipeline_file_formats }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_file_formats | length > 0
+
+    - name: Create stages
+      snowflake.snowflake.stage:
+        name: "{{ item.name }}"
+        database: "{{ pipeline_database }}"
+        schema: "{{ pipeline_schema }}"
+        url: "{{ item.url | default(omit) }}"
+        storage_integration: "{{ item.storage_integration | default(omit) }}"
+        file_format: "{{ item.file_format | default(omit) }}"
+        comment: "{{ item.comment | default('') }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: "{{ pipeline_state }}"
+      loop: "{{ pipeline_stages }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_stages | length > 0
+
+    - name: Create pipes
+      snowflake.snowflake.execute_sql:
+        sql: >-
+          CREATE OR REPLACE PIPE {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
+          {% if item.auto_ingest | default(false) %}AUTO_INGEST = TRUE{% endif %}
+          AS {{ item.copy_statement }}
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        warehouse: "{{ sf_warehouse }}"
+      loop: "{{ pipeline_pipes }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_pipes | length > 0
+
+    - name: Create streams
+      snowflake.snowflake.execute_sql:
+        sql: >-
+          CREATE OR REPLACE STREAM {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
+          ON TABLE {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.source_table }}
+          {% if item.append_only | default(false) %}APPEND_ONLY = TRUE{% endif %}
+          {% if item.comment is defined %}COMMENT = '{{ item.comment }}'{% endif %}
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        warehouse: "{{ sf_warehouse }}"
+      loop: "{{ pipeline_streams }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_streams | length > 0
+
+    - name: Create tasks
+      snowflake.snowflake.execute_sql:
+        sql: >-
+          CREATE OR REPLACE TASK {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
+          WAREHOUSE = '{{ item.warehouse | default(sf_warehouse) }}'
+          {% if item.schedule is defined %}SCHEDULE = '{{ item.schedule }}'{% endif %}
+          {% if item.predecessors is defined and item.predecessors | length > 0 %}
+          AFTER {{ item.predecessors | join(', ') }}
+          {% endif %}
+          AS {{ item.sql }}
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        warehouse: "{{ sf_warehouse }}"
+      loop: "{{ pipeline_tasks }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_tasks | length > 0
+
+    - name: Enable tasks
+      snowflake.snowflake.execute_sql:
+        sql: "ALTER TASK {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }} RESUME"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        warehouse: "{{ sf_warehouse }}"
+      loop: "{{ pipeline_tasks | selectattr('enabled', 'defined') | selectattr('enabled') | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: pipeline_tasks | length > 0
+
+  rescue:
+    - name: Report pipeline configuration failure
+      ansible.builtin.fail:
+        msg: >-
+          Data pipeline configuration failed for {{ pipeline_database }}.{{ pipeline_schema }}.
+          Error: {{ ansible_failed_result.msg | default('Unknown error') }}

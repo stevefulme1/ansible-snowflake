@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  role_name: data_pipeline
+  author: Red Hat Ansible
+  description: Configure Snowflake data pipeline components - stages, pipes, tasks, streams
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.14"
+  platforms:
+    - name: EL
+      versions: [8, 9]
+  galaxy_tags: [snowflake, cloud, data, pipeline, etl]
+dependencies: []
