@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -83,13 +84,7 @@ def run_module():
         column_name=dict(type="str", required=True),
         column_type=dict(type="str"),
         new_name=dict(type="str"),
-        action=dict(
-            type="str",
-            required=True,
-            choices=[
-                "add",
-                "drop",
-                "rename"]),
+        action=dict(type="str", required=True, choices=["add", "drop", "rename"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -112,16 +107,14 @@ def run_module():
         ctype = module.params.get("column_type")
         if not ctype:
             module.fail_json(msg="column_type is required when action=add")
-        sql = "ALTER TABLE {0} ADD COLUMN {1} {2}".format(
-            fqn, col, ctype.upper())
+        sql = "ALTER TABLE {0} ADD COLUMN {1} {2}".format(fqn, col, ctype.upper())
     elif action == "drop":
         sql = "ALTER TABLE {0} DROP COLUMN {1}".format(fqn, col)
     else:
         new = module.params.get("new_name")
         if not new:
             module.fail_json(msg="new_name is required when action=rename")
-        sql = "ALTER TABLE {0} RENAME COLUMN {1} TO {2}".format(
-            fqn, col, new.upper())
+        sql = "ALTER TABLE {0} RENAME COLUMN {1} TO {2}".format(fqn, col, new.upper())
 
     try:
         client = SnowflakeClient(module)

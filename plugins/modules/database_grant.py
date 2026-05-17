@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -70,20 +71,10 @@ def run_module():
         privilege=dict(
             type="str",
             required=True,
-            choices=[
-                "USAGE",
-                "MONITOR",
-                "CREATE SCHEMA",
-                "MODIFY",
-                "ALL PRIVILEGES"],
+            choices=["USAGE", "MONITOR", "CREATE SCHEMA", "MODIFY", "ALL PRIVILEGES"],
         ),
         role=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleModule(

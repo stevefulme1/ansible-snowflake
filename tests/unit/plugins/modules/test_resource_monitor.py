@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the resource_monitor module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,9 @@ class TestDocumentation:
         assert len(resource_monitor.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "resource_monitor" in resource_monitor.DOCUMENTATION or "resource_monitor" in resource_monitor.DOCUMENTATION
+        assert (
+            "resource_monitor" in resource_monitor.DOCUMENTATION or "resource_monitor" in resource_monitor.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in resource_monitor.DOCUMENTATION
@@ -146,8 +149,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "resource_monitor": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "resource_monitor": {"name": "test", "owner": "SYSADMIN"}}
         assert "resource_monitor" in result
 
     def test_return_on_absent(self):
@@ -159,8 +161,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "resource_monitor": {
-            "name": "MY_RESOURCE_MONITOR"}}
+        result = {"changed": True, "resource_monitor": {"name": "MY_RESOURCE_MONITOR"}}
         assert "name" in result["resource_monitor"]
 
 

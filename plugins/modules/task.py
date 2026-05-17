@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -86,9 +87,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 def task_exists(client, db, schema, name):
     fqn = "{0}.{1}".format(db, schema)
-    rows = client.query(
-        "SHOW TASKS LIKE '{0}' IN SCHEMA {1}".format(
-            name, fqn))
+    rows = client.query("SHOW TASKS LIKE '{0}' IN SCHEMA {1}".format(name, fqn))
     return len(rows) > 0
 
 
@@ -103,12 +102,7 @@ def run_module():
         after=dict(type="str"),
         when_condition=dict(type="str"),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -144,30 +138,15 @@ def run_module():
                     module.fail_json(msg="sql_statement required for new task")
                 parts = ["CREATE TASK {0}".format(fqn)]
                 if module.params.get("warehouse_name"):
-                    parts.append(
-                        "WAREHOUSE = {0}".format(
-                            module.params["warehouse_name"])
-                    )
+                    parts.append("WAREHOUSE = {0}".format(module.params["warehouse_name"]))
                 if module.params.get("schedule"):
-                    parts.append(
-                        "SCHEDULE = '{0}'".format(
-                            escape_sql_string(
-                                module.params["schedule"])))
+                    parts.append("SCHEDULE = '{0}'".format(escape_sql_string(module.params["schedule"])))
                 if module.params.get("after"):
-                    parts.append(
-                        "AFTER {0}.{1}.{2}".format(
-                            db, schema, module.params["after"].upper()
-                        )
-                    )
+                    parts.append("AFTER {0}.{1}.{2}".format(db, schema, module.params["after"].upper()))
                 if module.params.get("comment"):
-                    parts.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(
-                                module.params["comment"])))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 if module.params.get("when_condition"):
-                    parts.append(
-                        "WHEN {0}".format(
-                            module.params["when_condition"]))
+                    parts.append("WHEN {0}".format(module.params["when_condition"]))
                 parts.append("AS {0}".format(stmt))
                 sql = " ".join(parts)
                 changed = True

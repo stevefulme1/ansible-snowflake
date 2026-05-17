@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -68,12 +69,7 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         session_idle_timeout_mins=dict(type="int", default=240),
         session_ui_idle_timeout_mins=dict(type="int", default=240),
         comment=dict(type="str"),
@@ -91,27 +87,16 @@ def run_module():
     state = module.params["state"]
 
     props = [
-        "SESSION_IDLE_TIMEOUT_MINS = {0}".format(
-            module.params["session_idle_timeout_mins"]
-        ),
-        "SESSION_UI_IDLE_TIMEOUT_MINS = {0}".format(
-            module.params["session_ui_idle_timeout_mins"]
-        ),
+        "SESSION_IDLE_TIMEOUT_MINS = {0}".format(module.params["session_idle_timeout_mins"]),
+        "SESSION_UI_IDLE_TIMEOUT_MINS = {0}".format(module.params["session_ui_idle_timeout_mins"]),
     ]
     if module.params.get("comment"):
-        props.append(
-            "COMMENT = '{0}'".format(
-                escape_sql_string(
-                    module.params["comment"])))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     if state == "absent":
-        sql = "DROP SESSION POLICY IF EXISTS {0}".format(
-            SnowflakeClient.quote_identifier(name)
-        )
+        sql = "DROP SESSION POLICY IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
     else:
-        sql = "CREATE OR REPLACE SESSION POLICY {0} {1}".format(
-            SnowflakeClient.quote_identifier(name), " ".join(props)
-        )
+        sql = "CREATE OR REPLACE SESSION POLICY {0} {1}".format(SnowflakeClient.quote_identifier(name), " ".join(props))
 
     try:
         client = SnowflakeClient(module)

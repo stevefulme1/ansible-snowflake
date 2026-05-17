@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the external_table module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -146,8 +147,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "external_table": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "external_table": {"name": "test", "owner": "SYSADMIN"}}
         assert "external_table" in result
 
     def test_return_on_absent(self):
@@ -159,8 +159,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "external_table": {
-            "name": "MY_EXTERNAL_TABLE"}}
+        result = {"changed": True, "external_table": {"name": "MY_EXTERNAL_TABLE"}}
         assert "name" in result["external_table"]
 
 

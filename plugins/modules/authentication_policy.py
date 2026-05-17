@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -77,12 +78,7 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         authentication_methods=dict(type="list", elements="str"),
         mfa_authentication_methods=dict(type="list", elements="str"),
         client_types=dict(type="list", elements="str"),
@@ -105,36 +101,24 @@ def run_module():
 
     props = []
     if module.params.get("authentication_methods"):
-        vals = ",".join(
-            "'{0}'".format(escape_sql_string(m)) for m in module.params["authentication_methods"]
-        )
+        vals = ",".join("'{0}'".format(escape_sql_string(m)) for m in module.params["authentication_methods"])
         props.append("AUTHENTICATION_METHODS = ({0})".format(vals))
     if module.params.get("mfa_authentication_methods"):
-        vals = ",".join(
-            "'{0}'".format(escape_sql_string(m)) for m in module.params["mfa_authentication_methods"]
-        )
+        vals = ",".join("'{0}'".format(escape_sql_string(m)) for m in module.params["mfa_authentication_methods"])
         props.append("MFA_AUTHENTICATION_METHODS = ({0})".format(vals))
     if module.params.get("client_types"):
-        vals = ",".join("'{0}'".format(escape_sql_string(c))
-                        for c in module.params["client_types"])
+        vals = ",".join("'{0}'".format(escape_sql_string(c)) for c in module.params["client_types"])
         props.append("CLIENT_TYPES = ({0})".format(vals))
     if module.params.get("security_integrations"):
-        vals = ",".join(
-            "'{0}'".format(escape_sql_string(s)) for s in module.params["security_integrations"]
-        )
+        vals = ",".join("'{0}'".format(escape_sql_string(s)) for s in module.params["security_integrations"])
         props.append("SECURITY_INTEGRATIONS = ({0})".format(vals))
     if module.params.get("comment"):
-        props.append(
-            "COMMENT = '{0}'".format(
-                escape_sql_string(
-                    module.params["comment"])))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)
         if state == "absent":
-            sql = "DROP AUTHENTICATION POLICY IF EXISTS {0}".format(
-                client.quote_identifier(name)
-            )
+            sql = "DROP AUTHENTICATION POLICY IF EXISTS {0}".format(client.quote_identifier(name))
             changed = True
         else:
             sql = "CREATE OR REPLACE AUTHENTICATION POLICY {0} {1}".format(

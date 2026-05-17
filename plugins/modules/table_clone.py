@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -91,8 +92,7 @@ def run_module():
     source = module.params["source_table"].upper()
     sql = "CREATE TABLE {0} CLONE {1}".format(fqn, source)
     if module.params.get("at_timestamp"):
-        sql += " AT (TIMESTAMP => '{0}')".format(
-            escape_sql_string(module.params["at_timestamp"]))
+        sql += " AT (TIMESTAMP => '{0}')".format(escape_sql_string(module.params["at_timestamp"]))
 
     try:
         client = SnowflakeClient(module)

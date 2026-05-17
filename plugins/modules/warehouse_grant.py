@@ -72,20 +72,10 @@ def run_module():
         privilege=dict(
             type="str",
             required=True,
-            choices=[
-                "USAGE",
-                "OPERATE",
-                "MONITOR",
-                "MODIFY",
-                "ALL PRIVILEGES"],
+            choices=["USAGE", "OPERATE", "MONITOR", "MODIFY", "ALL PRIVILEGES"],
         ),
         role=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleModule(

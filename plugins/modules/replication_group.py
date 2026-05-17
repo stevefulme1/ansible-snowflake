@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -78,12 +79,7 @@ def run_module():
         allowed_databases=dict(type="list", elements="str"),
         allowed_accounts=dict(type="list", elements="str"),
         replication_schedule=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -102,28 +98,14 @@ def run_module():
     else:
         parts = ["CREATE REPLICATION GROUP IF NOT EXISTS {0}".format(name)]
         if module.params.get("object_types"):
-            parts.append(
-                "OBJECT_TYPES = {0}".format(
-                    ", ".join(t.upper() for t in module.params["object_types"])
-                )
-            )
+            parts.append("OBJECT_TYPES = {0}".format(", ".join(t.upper() for t in module.params["object_types"])))
         if module.params.get("allowed_databases"):
-            parts.append(
-                "ALLOWED_DATABASES = {0}".format(
-                    ", ".join(module.params["allowed_databases"])
-                )
-            )
+            parts.append("ALLOWED_DATABASES = {0}".format(", ".join(module.params["allowed_databases"])))
         if module.params.get("allowed_accounts"):
-            parts.append(
-                "ALLOWED_ACCOUNTS = {0}".format(
-                    ", ".join(module.params["allowed_accounts"])
-                )
-            )
+            parts.append("ALLOWED_ACCOUNTS = {0}".format(", ".join(module.params["allowed_accounts"])))
         if module.params.get("replication_schedule"):
             parts.append(
-                "REPLICATION_SCHEDULE = '{0}'".format(
-                    escape_sql_string(module.params["replication_schedule"])
-                )
+                "REPLICATION_SCHEDULE = '{0}'".format(escape_sql_string(module.params["replication_schedule"]))
             )
         sql = " ".join(parts)
 

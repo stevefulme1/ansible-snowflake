@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -97,18 +98,11 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         password_min_length=dict(type="int", default=8, no_log=False),
         password_max_length=dict(type="int", default=256, no_log=False),
-        password_min_upper_case_chars=dict(
-            type="int", default=1, no_log=False),
-        password_min_lower_case_chars=dict(
-            type="int", default=1, no_log=False),
+        password_min_upper_case_chars=dict(type="int", default=1, no_log=False),
+        password_min_lower_case_chars=dict(type="int", default=1, no_log=False),
         password_min_numeric_chars=dict(type="int", default=1, no_log=False),
         password_min_special_chars=dict(type="int", default=0, no_log=False),
         password_max_age_days=dict(type="int", default=90, no_log=False),
@@ -131,59 +125,36 @@ def run_module():
     sql = ""
 
     props = [
-        "PASSWORD_MIN_LENGTH = {0}".format(
-            module.params["password_min_length"]),
-        "PASSWORD_MAX_LENGTH = {0}".format(
-            module.params["password_max_length"]),
-        "PASSWORD_MIN_UPPER_CASE_CHARS = {0}".format(
-            module.params["password_min_upper_case_chars"]
-        ),
-        "PASSWORD_MIN_LOWER_CASE_CHARS = {0}".format(
-            module.params["password_min_lower_case_chars"]
-        ),
-        "PASSWORD_MIN_NUMERIC_CHARS = {0}".format(
-            module.params["password_min_numeric_chars"]
-        ),
-        "PASSWORD_MIN_SPECIAL_CHARS = {0}".format(
-            module.params["password_min_special_chars"]
-        ),
-        "PASSWORD_MAX_AGE_DAYS = {0}".format(
-            module.params["password_max_age_days"]),
-        "PASSWORD_MAX_RETRIES = {0}".format(
-            module.params["password_max_retries"]),
-        "PASSWORD_LOCKOUT_TIME_MINS = {0}".format(
-            module.params["password_lockout_time_mins"]
-        ),
+        "PASSWORD_MIN_LENGTH = {0}".format(module.params["password_min_length"]),
+        "PASSWORD_MAX_LENGTH = {0}".format(module.params["password_max_length"]),
+        "PASSWORD_MIN_UPPER_CASE_CHARS = {0}".format(module.params["password_min_upper_case_chars"]),
+        "PASSWORD_MIN_LOWER_CASE_CHARS = {0}".format(module.params["password_min_lower_case_chars"]),
+        "PASSWORD_MIN_NUMERIC_CHARS = {0}".format(module.params["password_min_numeric_chars"]),
+        "PASSWORD_MIN_SPECIAL_CHARS = {0}".format(module.params["password_min_special_chars"]),
+        "PASSWORD_MAX_AGE_DAYS = {0}".format(module.params["password_max_age_days"]),
+        "PASSWORD_MAX_RETRIES = {0}".format(module.params["password_max_retries"]),
+        "PASSWORD_LOCKOUT_TIME_MINS = {0}".format(module.params["password_lockout_time_mins"]),
     ]
     if module.params.get("comment"):
-        props.append(
-            "COMMENT = '{0}'".format(
-                escape_sql_string(
-                    module.params["comment"])))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)
 
         if state == "absent":
-            sql = "DROP PASSWORD POLICY IF EXISTS {0}".format(
-                client.quote_identifier(name)
-            )
+            sql = "DROP PASSWORD POLICY IF EXISTS {0}".format(client.quote_identifier(name))
             changed = True
             if not module.check_mode:
                 client.execute_ddl(sql)
         else:
             # Try create, fall back to alter
-            sql = "CREATE PASSWORD POLICY IF NOT EXISTS {0} {1}".format(
-                client.quote_identifier(name), " ".join(props)
-            )
+            sql = "CREATE PASSWORD POLICY IF NOT EXISTS {0} {1}".format(client.quote_identifier(name), " ".join(props))
             changed = True
             if not module.check_mode:
                 try:
                     client.execute_ddl(sql)
                 except SnowflakeError:
-                    sql = "ALTER PASSWORD POLICY {0} SET {1}".format(
-                        client.quote_identifier(name), " ".join(props)
-                    )
+                    sql = "ALTER PASSWORD POLICY {0} SET {1}".format(client.quote_identifier(name), " ".join(props))
                     client.execute_ddl(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))

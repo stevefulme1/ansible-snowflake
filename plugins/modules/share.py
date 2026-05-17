@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -66,12 +67,7 @@ def run_module():
         name=dict(type="str", required=True),
         accounts=dict(type="list", elements="str"),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -90,10 +86,7 @@ def run_module():
     else:
         parts = ["CREATE SHARE IF NOT EXISTS {0}".format(name)]
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:
@@ -101,9 +94,7 @@ def run_module():
         if not module.check_mode:
             client.execute_ddl(sql)
         if state == "present" and module.params.get("accounts"):
-            add_sql = "ALTER SHARE {0} ADD ACCOUNTS = {1}".format(
-                name, ", ".join(module.params["accounts"])
-            )
+            add_sql = "ALTER SHARE {0} ADD ACCOUNTS = {1}".format(name, ", ".join(module.params["accounts"]))
             if not module.check_mode:
                 client.execute_ddl(add_sql)
     except SnowflakeError as e:

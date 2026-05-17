@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -98,21 +99,14 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def user_exists(client, name):
-    rows = client.query(
-        "SHOW USERS LIKE '{0}'".format(
-            escape_sql_string(name)))
+    rows = client.query("SHOW USERS LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         login_name=dict(type="str"),
         display_name=dict(type="str"),
         email=dict(type="str"),
@@ -152,27 +146,13 @@ def run_module():
         ("default_namespace", "DEFAULT_NAMESPACE"),
     ]:
         if module.params.get(param):
-            props.append(
-                "{0} = '{1}'".format(
-                    sf_prop, escape_sql_string(
-                        module.params[param])))
+            props.append("{0} = '{1}'".format(sf_prop, escape_sql_string(module.params[param])))
     if module.params.get("user_password"):
-        props.append(
-            "PASSWORD = '{0}'".format(
-                escape_sql_string(
-                    module.params["user_password"])))
-    props.append(
-        "MUST_CHANGE_PASSWORD = {0}".format(
-            str(module.params["must_change_password"]).upper()
-        )
-    )
-    props.append("DISABLED = {0}".format(
-        str(module.params["disabled"]).upper()))
+        props.append("PASSWORD = '{0}'".format(escape_sql_string(module.params["user_password"])))
+    props.append("MUST_CHANGE_PASSWORD = {0}".format(str(module.params["must_change_password"]).upper()))
+    props.append("DISABLED = {0}".format(str(module.params["disabled"]).upper()))
     if module.params.get("comment"):
-        props.append(
-            "COMMENT = '{0}'".format(
-                escape_sql_string(
-                    module.params["comment"])))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)
@@ -180,23 +160,18 @@ def run_module():
 
         if state == "absent":
             if exists:
-                sql = "DROP USER IF EXISTS {0}".format(
-                    client.quote_identifier(name))
+                sql = "DROP USER IF EXISTS {0}".format(client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
         else:
             if not exists:
-                sql = "CREATE USER IF NOT EXISTS {0} {1}".format(
-                    client.quote_identifier(name), " ".join(props)
-                )
+                sql = "CREATE USER IF NOT EXISTS {0} {1}".format(client.quote_identifier(name), " ".join(props))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
             else:
-                sql = "ALTER USER {0} SET {1}".format(
-                    client.quote_identifier(name), " ".join(props)
-                )
+                sql = "ALTER USER {0} SET {1}".format(client.quote_identifier(name), " ".join(props))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)

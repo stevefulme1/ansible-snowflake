@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -84,24 +85,16 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         oauth_client=dict(
             type="str",
             default="CUSTOM",
             choices=["CUSTOM", "LOOKER", "TABLEAU_DESKTOP", "TABLEAU_SERVER"],
         ),
-        oauth_client_type=dict(
-            type="str", default="CONFIDENTIAL", choices=["PUBLIC", "CONFIDENTIAL"]
-        ),
+        oauth_client_type=dict(type="str", default="CONFIDENTIAL", choices=["PUBLIC", "CONFIDENTIAL"]),
         oauth_redirect_uri=dict(type="str"),
         oauth_issue_refresh_tokens=dict(type="bool", default=True),
-        oauth_refresh_token_validity=dict(
-            type="int", default=7776000, no_log=False),
+        oauth_refresh_token_validity=dict(type="int", default=7776000, no_log=False),
         enabled=dict(type="bool", default=True),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -117,42 +110,20 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(
-            SnowflakeClient.quote_identifier(name)
-        )
+        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
     else:
-        parts = [
-            "CREATE OR REPLACE SECURITY INTEGRATION {0}".format(
-                SnowflakeClient.quote_identifier(name)
-            )
-        ]
+        parts = ["CREATE OR REPLACE SECURITY INTEGRATION {0}".format(SnowflakeClient.quote_identifier(name))]
         parts.append("TYPE = OAUTH")
-        parts.append(
-            "OAUTH_CLIENT = '{0}'".format(
-                escape_sql_string(
-                    module.params["oauth_client"])))
+        parts.append("OAUTH_CLIENT = '{0}'".format(escape_sql_string(module.params["oauth_client"])))
         if module.params["oauth_client"] == "CUSTOM":
-            parts.append(
-                "OAUTH_CLIENT_TYPE = '{0}'".format(
-                    escape_sql_string(module.params["oauth_client_type"]))
-            )
+            parts.append("OAUTH_CLIENT_TYPE = '{0}'".format(escape_sql_string(module.params["oauth_client_type"])))
         if module.params.get("oauth_redirect_uri"):
-            parts.append(
-                "OAUTH_REDIRECT_URI = '{0}'".format(
-                    escape_sql_string(module.params["oauth_redirect_uri"]))
-            )
+            parts.append("OAUTH_REDIRECT_URI = '{0}'".format(escape_sql_string(module.params["oauth_redirect_uri"])))
         parts.append(
-            "OAUTH_ISSUE_REFRESH_TOKENS = {0}".format(
-                str(module.params["oauth_issue_refresh_tokens"]).upper()
-            )
+            "OAUTH_ISSUE_REFRESH_TOKENS = {0}".format(str(module.params["oauth_issue_refresh_tokens"]).upper())
         )
-        parts.append(
-            "OAUTH_REFRESH_TOKEN_VALIDITY = {0}".format(
-                module.params["oauth_refresh_token_validity"]
-            )
-        )
-        parts.append("ENABLED = {0}".format(
-            str(module.params["enabled"]).upper()))
+        parts.append("OAUTH_REFRESH_TOKEN_VALIDITY = {0}".format(module.params["oauth_refresh_token_validity"]))
+        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
         sql = " ".join(parts)
 
     try:

@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -78,9 +79,7 @@ def run_module():
         client = SnowflakeClient(module)
         if module.params.get("name"):
             rows = client.query(
-                "DESCRIBE INTEGRATION {0}".format(
-                    client.quote_identifier(module.params["name"].upper())
-                )
+                "DESCRIBE INTEGRATION {0}".format(client.quote_identifier(module.params["name"].upper()))
             )
         else:
             rows = client.query("SHOW STORAGE INTEGRATIONS")
@@ -91,7 +90,7 @@ def run_module():
     _limit = module.params.get("limit") or 100
     _offset = module.params.get("offset") or 0
     if isinstance(rows, list):
-        rows = rows[_offset:_offset + _limit]
+        rows = rows[_offset : _offset + _limit]
     module.exit_json(changed=False, integrations=rows)
 
 

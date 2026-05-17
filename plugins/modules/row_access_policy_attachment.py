@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -68,12 +69,7 @@ def run_module():
         table=dict(type="str", required=True),
         policy=dict(type="str", required=True),
         on_columns=dict(type="list", elements="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -90,12 +86,9 @@ def run_module():
     state = module.params["state"]
 
     if state == "present":
-        sql = "ALTER TABLE {0} ADD ROW ACCESS POLICY {1} ON ({2})".format(
-            table, policy, columns
-        )
+        sql = "ALTER TABLE {0} ADD ROW ACCESS POLICY {1} ON ({2})".format(table, policy, columns)
     else:
-        sql = "ALTER TABLE {0} DROP ROW ACCESS POLICY {1}".format(
-            table, policy)
+        sql = "ALTER TABLE {0} DROP ROW ACCESS POLICY {1}".format(table, policy)
 
     try:
         client = SnowflakeClient(module)

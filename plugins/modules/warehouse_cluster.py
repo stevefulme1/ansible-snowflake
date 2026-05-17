@@ -74,21 +74,11 @@ def run_module():
     parts = ["ALTER WAREHOUSE {0} SET".format(wh)]
     settings = []
     if module.params.get("min_cluster_count") is not None:
-        settings.append(
-            "MIN_CLUSTER_COUNT = {0}".format(
-                module.params["min_cluster_count"])
-        )
+        settings.append("MIN_CLUSTER_COUNT = {0}".format(module.params["min_cluster_count"]))
     if module.params.get("max_cluster_count") is not None:
-        settings.append(
-            "MAX_CLUSTER_COUNT = {0}".format(
-                module.params["max_cluster_count"])
-        )
+        settings.append("MAX_CLUSTER_COUNT = {0}".format(module.params["max_cluster_count"]))
     if module.params.get("scaling_policy"):
-        settings.append(
-            "SCALING_POLICY = '{0}'".format(
-                escape_sql_string(
-                    module.params["scaling_policy"]))
-        )
+        settings.append("SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"])))
     if not settings:
         module.fail_json(msg="At least one cluster setting is required")
     parts.append(" ".join(settings))

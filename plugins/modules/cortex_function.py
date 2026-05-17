@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -103,24 +104,13 @@ def run_module():
         database_name=dict(type="str", required=True),
         function_type=dict(
             type="str",
-            choices=[
-                "COMPLETE",
-                "EXTRACT_ANSWER",
-                "SENTIMENT",
-                "SUMMARIZE",
-                "TRANSLATE",
-                "CLASSIFY_TEXT"],
+            choices=["COMPLETE", "EXTRACT_ANSWER", "SENTIMENT", "SUMMARIZE", "TRANSLATE", "CLASSIFY_TEXT"],
         ),
         model=dict(type="str"),
         arguments=dict(type="list", elements="dict"),
         returns=dict(type="str"),
         body=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -153,10 +143,7 @@ def run_module():
         args = module.params.get("arguments") or []
         arg_parts = []
         for a in args:
-            arg_parts.append(
-                "{0} {1}".format(
-                    a["name"], a.get(
-                        "type", "VARCHAR")))
+            arg_parts.append("{0} {1}".format(a["name"], a.get("type", "VARCHAR")))
         arg_str = ", ".join(arg_parts)
         ret = module.params.get("returns", "VARCHAR")
         parts = [

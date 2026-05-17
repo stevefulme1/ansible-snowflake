@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -69,12 +70,7 @@ def run_module():
         share_name=dict(type="str"),
         title=dict(type="str"),
         description=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -93,9 +89,7 @@ def run_module():
     else:
         parts = ["CREATE OR REPLACE LISTING {0}".format(name)]
         if module.params.get("share_name"):
-            parts.append(
-                "FOR SHARE {0}".format(
-                    module.params["share_name"].upper()))
+            parts.append("FOR SHARE {0}".format(module.params["share_name"].upper()))
         sql = " ".join(parts)
 
     try:

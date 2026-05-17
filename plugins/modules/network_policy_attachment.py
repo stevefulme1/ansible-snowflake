@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -64,19 +65,9 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        target=dict(
-            type="str",
-            default="account",
-            choices=[
-                "account",
-                "user"]),
+        target=dict(type="str", default="account", choices=["account", "user"]),
         user_name=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -93,9 +84,7 @@ def run_module():
 
     if target == "account":
         if state == "present":
-            sql = "ALTER ACCOUNT SET NETWORK_POLICY = {0}".format(
-                SnowflakeClient.quote_identifier(name)
-            )
+            sql = "ALTER ACCOUNT SET NETWORK_POLICY = {0}".format(SnowflakeClient.quote_identifier(name))
         else:
             sql = "ALTER ACCOUNT UNSET NETWORK_POLICY"
     else:
@@ -108,9 +97,7 @@ def run_module():
                 SnowflakeClient.quote_identifier(name),
             )
         else:
-            sql = "ALTER USER {0} UNSET NETWORK_POLICY".format(
-                SnowflakeClient.quote_identifier(user_name.upper())
-            )
+            sql = "ALTER USER {0} UNSET NETWORK_POLICY".format(SnowflakeClient.quote_identifier(user_name.upper()))
 
     try:
         client = SnowflakeClient(module)

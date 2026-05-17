@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -76,9 +77,7 @@ def run_module():
     name = module.params["name"].upper()
     param = module.params["parameter"].upper()
     value = module.params["value"]
-    sql = "ALTER WAREHOUSE {0} SET {1} = {2}".format(
-        SnowflakeClient.quote_identifier(name), param, value
-    )
+    sql = "ALTER WAREHOUSE {0} SET {1} = {2}".format(SnowflakeClient.quote_identifier(name), param, value)
 
     try:
         client = SnowflakeClient(module)

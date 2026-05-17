@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -84,15 +85,8 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
-        format_type=dict(
-            type="str", default="CSV", choices=["CSV", "JSON", "PARQUET", "AVRO", "ORC"]
-        ),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        format_type=dict(type="str", default="CSV", choices=["CSV", "JSON", "PARQUET", "AVRO", "ORC"]),
         options=dict(type="dict", default={}),
         comment=dict(type="str"),
     )
@@ -112,20 +106,11 @@ def run_module():
         sql = "DROP FILE FORMAT IF EXISTS {0}".format(name)
     else:
         parts = ["CREATE OR REPLACE FILE FORMAT {0}".format(name)]
-        parts.append(
-            "TYPE = '{0}'".format(
-                escape_sql_string(
-                    module.params["format_type"])))
+        parts.append("TYPE = '{0}'".format(escape_sql_string(module.params["format_type"])))
         for key, val in module.params["options"].items():
-            parts.append(
-                "{0} = '{1}'".format(
-                    escape_sql_string(
-                        key.upper()), val))
+            parts.append("{0} = '{1}'".format(escape_sql_string(key.upper()), val))
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

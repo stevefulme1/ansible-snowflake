@@ -66,14 +66,11 @@ class SnowflakeClient(object):
         self.schema = module.params.get("schema")
         self.validate_certs = module.params.get("validate_certs", True)
 
-        self.base_url = "https://{0}.snowflakecomputing.com".format(
-            self.account)
+        self.base_url = "https://{0}.snowflakecomputing.com".format(self.account)
         self.api_url = "{0}/api/v2/statements".format(self.base_url)
 
         if not self.private_key and not self.password:
-            module.fail_json(
-                msg="Either private_key or password is required for authentication."
-            )
+            module.fail_json(msg="Either private_key or password is required for authentication.")
 
         self._token = self._authenticate()
 
@@ -121,9 +118,7 @@ class SnowflakeClient(object):
 
         # Build the public key fingerprint for the issuer
         public_key_der = private_key_obj.public_key().public_bytes(
-            encoding=__import__(
-                "cryptography.hazmat.primitives.serialization", fromlist=["Encoding"]
-            ).Encoding.DER,
+            encoding=__import__("cryptography.hazmat.primitives.serialization", fromlist=["Encoding"]).Encoding.DER,
             format=__import__(
                 "cryptography.hazmat.primitives.serialization",
                 fromlist=["PublicFormat"],
@@ -171,10 +166,7 @@ class SnowflakeClient(object):
             result = json.loads(resp.read())
             return result["data"]["token"]
         except (HTTPError, URLError, ValueError, KeyError) as exc:
-            self.module.fail_json(
-                msg="Snowflake password authentication failed: {0}".format(
-                    str(exc))
-            )
+            self.module.fail_json(msg="Snowflake password authentication failed: {0}".format(str(exc)))
 
     # ------------------------------------------------------------------
     # Request helpers
@@ -186,9 +178,7 @@ class SnowflakeClient(object):
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": "Bearer {0}".format(self._token),
-            "X-Snowflake-Authorization-Token-Type": "KEYPAIR_JWT"
-            if self.private_key
-            else "SNOWFLAKE",
+            "X-Snowflake-Authorization-Token-Type": "KEYPAIR_JWT" if self.private_key else "SNOWFLAKE",
             "User-Agent": "AnsibleSnowflakeCollection/1.0",
         }
 
@@ -260,8 +250,7 @@ class SnowflakeClient(object):
             # Async query -- poll until complete
             handle = result.get("statementHandle")
             if not handle:
-                raise SnowflakeError(
-                    "Received 202 but no statementHandle in response.")
+                raise SnowflakeError("Received 202 but no statementHandle in response.")
             return self.get_results(handle)
 
         if result.get("code") and int(result["code"]) >= 390000:
@@ -324,9 +313,7 @@ class SnowflakeClient(object):
             )
 
         raise SnowflakeError(
-            "Query timed out after {0} seconds (handle={1}).".format(
-                self.MAX_POLL_SECONDS, statement_handle
-            )
+            "Query timed out after {0} seconds (handle={1}).".format(self.MAX_POLL_SECONDS, statement_handle)
         )
 
     # ------------------------------------------------------------------

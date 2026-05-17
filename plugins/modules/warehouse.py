@@ -92,21 +92,14 @@ sql:
 
 
 def warehouse_exists(client, name):
-    rows = client.query(
-        "SHOW WAREHOUSES LIKE '{0}'".format(
-            escape_sql_string(name)))
+    rows = client.query("SHOW WAREHOUSES LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         size=dict(
             type="str",
             default="XSMALL",
@@ -127,9 +120,7 @@ def run_module():
         auto_resume=dict(type="bool", default=True),
         min_cluster_count=dict(type="int", default=1),
         max_cluster_count=dict(type="int", default=1),
-        scaling_policy=dict(
-            type="str", default="STANDARD", choices=["STANDARD", "ECONOMY"]
-        ),
+        scaling_policy=dict(type="str", default="STANDARD", choices=["STANDARD", "ECONOMY"]),
         comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -152,48 +143,21 @@ def run_module():
 
         if state == "absent":
             if exists:
-                sql = "DROP WAREHOUSE IF EXISTS {0}".format(
-                    client.quote_identifier(name)
-                )
+                sql = "DROP WAREHOUSE IF EXISTS {0}".format(client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
         else:
             if not exists:
-                parts = [
-                    "CREATE WAREHOUSE IF NOT EXISTS {0}".format(
-                        client.quote_identifier(name)
-                    )
-                ]
-                parts.append(
-                    "WAREHOUSE_SIZE = '{0}'".format(
-                        escape_sql_string(
-                            module.params["size"])))
-                parts.append(
-                    "AUTO_SUSPEND = {0}".format(
-                        module.params["auto_suspend"]))
-                parts.append(
-                    "AUTO_RESUME = {0}".format(
-                        str(module.params["auto_resume"]).upper()
-                    )
-                )
-                parts.append(
-                    "MIN_CLUSTER_COUNT = {0}".format(
-                        module.params["min_cluster_count"])
-                )
-                parts.append(
-                    "MAX_CLUSTER_COUNT = {0}".format(
-                        module.params["max_cluster_count"])
-                )
-                parts.append(
-                    "SCALING_POLICY = '{0}'".format(
-                        escape_sql_string(module.params["scaling_policy"]))
-                )
+                parts = ["CREATE WAREHOUSE IF NOT EXISTS {0}".format(client.quote_identifier(name))]
+                parts.append("WAREHOUSE_SIZE = '{0}'".format(escape_sql_string(module.params["size"])))
+                parts.append("AUTO_SUSPEND = {0}".format(module.params["auto_suspend"]))
+                parts.append("AUTO_RESUME = {0}".format(str(module.params["auto_resume"]).upper()))
+                parts.append("MIN_CLUSTER_COUNT = {0}".format(module.params["min_cluster_count"]))
+                parts.append("MAX_CLUSTER_COUNT = {0}".format(module.params["max_cluster_count"]))
+                parts.append("SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"])))
                 if module.params.get("comment"):
-                    parts.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(
-                                module.params["comment"])))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
@@ -201,38 +165,15 @@ def run_module():
             else:
                 # ALTER existing warehouse
                 alterations = []
-                alterations.append(
-                    "WAREHOUSE_SIZE = '{0}'".format(
-                        escape_sql_string(module.params["size"]))
-                )
-                alterations.append(
-                    "AUTO_SUSPEND = {0}".format(module.params["auto_suspend"])
-                )
-                alterations.append(
-                    "AUTO_RESUME = {0}".format(
-                        str(module.params["auto_resume"]).upper()
-                    )
-                )
-                alterations.append(
-                    "MIN_CLUSTER_COUNT = {0}".format(
-                        module.params["min_cluster_count"])
-                )
-                alterations.append(
-                    "MAX_CLUSTER_COUNT = {0}".format(
-                        module.params["max_cluster_count"])
-                )
-                alterations.append(
-                    "SCALING_POLICY = '{0}'".format(
-                        escape_sql_string(module.params["scaling_policy"]))
-                )
+                alterations.append("WAREHOUSE_SIZE = '{0}'".format(escape_sql_string(module.params["size"])))
+                alterations.append("AUTO_SUSPEND = {0}".format(module.params["auto_suspend"]))
+                alterations.append("AUTO_RESUME = {0}".format(str(module.params["auto_resume"]).upper()))
+                alterations.append("MIN_CLUSTER_COUNT = {0}".format(module.params["min_cluster_count"]))
+                alterations.append("MAX_CLUSTER_COUNT = {0}".format(module.params["max_cluster_count"]))
+                alterations.append("SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"])))
                 if module.params.get("comment"):
-                    alterations.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(module.params["comment"]))
-                    )
-                sql = "ALTER WAREHOUSE {0} SET {1}".format(
-                    client.quote_identifier(name), " ".join(alterations)
-                )
+                    alterations.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+                sql = "ALTER WAREHOUSE {0} SET {1}".format(client.quote_identifier(name), " ".join(alterations))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)

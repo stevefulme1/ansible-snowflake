@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -83,12 +84,7 @@ def run_module():
         target_lag=dict(type="str"),
         warehouse_name=dict(type="str"),
         query=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -114,14 +110,9 @@ def run_module():
             module.fail_json(msg="query is required when state=present")
         parts = ["CREATE OR REPLACE DYNAMIC TABLE {0}".format(fqn)]
         if module.params.get("target_lag"):
-            parts.append(
-                "TARGET_LAG = '{0}'".format(
-                    escape_sql_string(
-                        module.params["target_lag"])))
+            parts.append("TARGET_LAG = '{0}'".format(escape_sql_string(module.params["target_lag"])))
         if module.params.get("warehouse_name"):
-            parts.append(
-                "WAREHOUSE = {0}".format(
-                    module.params["warehouse_name"]))
+            parts.append("WAREHOUSE = {0}".format(module.params["warehouse_name"]))
         parts.append("AS {0}".format(q))
         sql = " ".join(parts)
 

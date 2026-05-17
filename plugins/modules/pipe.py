@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -77,9 +78,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 def pipe_exists(client, db, schema, name):
     fqn = "{0}.{1}".format(db, schema)
-    rows = client.query(
-        "SHOW PIPES LIKE '{0}' IN SCHEMA {1}".format(
-            name, fqn))
+    rows = client.query("SHOW PIPES LIKE '{0}' IN SCHEMA {1}".format(name, fqn))
     return len(rows) > 0
 
 
@@ -91,12 +90,7 @@ def run_module():
         copy_statement=dict(type="str"),
         auto_ingest=dict(type="bool", default=False),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -129,16 +123,12 @@ def run_module():
             if not exists:
                 copy = module.params.get("copy_statement")
                 if not copy:
-                    module.fail_json(
-                        msg="copy_statement required for new pipe")
+                    module.fail_json(msg="copy_statement required for new pipe")
                 parts = ["CREATE PIPE {0}".format(fqn)]
                 if module.params["auto_ingest"]:
                     parts.append("AUTO_INGEST = TRUE")
                 if module.params.get("comment"):
-                    parts.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(
-                                module.params["comment"])))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 parts.append("AS {0}".format(copy))
                 sql = " ".join(parts)
                 changed = True

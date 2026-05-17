@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -90,16 +91,9 @@ def run_module():
         schema_name=dict(type="str", required=True),
         database_name=dict(type="str", required=True),
         constraint_name=dict(type="str", required=True),
-        constraint_type=dict(
-            type="str", choices=["primary_key", "unique", "foreign_key"]
-        ),
+        constraint_type=dict(type="str", choices=["primary_key", "unique", "foreign_key"]),
         columns=dict(type="list", elements="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -122,13 +116,9 @@ def run_module():
         ctype = module.params.get("constraint_type")
         cols = module.params.get("columns")
         if not ctype or not cols:
-            module.fail_json(
-                msg="constraint_type and columns required when state=present"
-            )
+            module.fail_json(msg="constraint_type and columns required when state=present")
         col_list = ", ".join(c.upper() for c in cols)
-        sql = "ALTER TABLE {0} ADD CONSTRAINT {1} {2} ({3})".format(
-            fqn, cname, CONSTRAINT_MAP[ctype], col_list
-        )
+        sql = "ALTER TABLE {0} ADD CONSTRAINT {1} {2} ({3})".format(fqn, cname, CONSTRAINT_MAP[ctype], col_list)
     else:
         sql = "ALTER TABLE {0} DROP CONSTRAINT {1}".format(fqn, cname)
 

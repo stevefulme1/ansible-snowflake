@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -87,12 +88,7 @@ def run_module():
         append_only=dict(type="bool", default=False),
         show_initial_rows=dict(type="bool", default=False),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -116,18 +112,13 @@ def run_module():
         src = module.params.get("source_table")
         if not src:
             module.fail_json(msg="source_table required when state=present")
-        parts = [
-            "CREATE STREAM IF NOT EXISTS {0} ON TABLE {1}".format(
-                fqn, src)]
+        parts = ["CREATE STREAM IF NOT EXISTS {0} ON TABLE {1}".format(fqn, src)]
         if module.params["append_only"]:
             parts.append("APPEND_ONLY = TRUE")
         if module.params["show_initial_rows"]:
             parts.append("SHOW_INITIAL_ROWS = TRUE")
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

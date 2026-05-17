@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -70,15 +71,8 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
-        scim_client=dict(
-            type="str", default="GENERIC", choices=["OKTA", "AZURE", "GENERIC"]
-        ),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        scim_client=dict(type="str", default="GENERIC", choices=["OKTA", "AZURE", "GENERIC"]),
         run_as_role=dict(type="str", default="GENERIC_SCIM_PROVISIONER"),
         enabled=dict(type="bool", default=True),
     )
@@ -95,9 +89,7 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(
-            SnowflakeClient.quote_identifier(name)
-        )
+        sql = "DROP SECURITY INTEGRATION IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
     else:
         sql = (
             "CREATE OR REPLACE SECURITY INTEGRATION {0} "

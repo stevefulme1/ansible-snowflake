@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -76,13 +77,9 @@ def run_module():
     accounts = ", ".join(module.params["target_accounts"])
 
     if module.params["enabled"]:
-        sql = "ALTER DATABASE {0} ENABLE REPLICATION TO ACCOUNTS {1}".format(
-            name, accounts
-        )
+        sql = "ALTER DATABASE {0} ENABLE REPLICATION TO ACCOUNTS {1}".format(name, accounts)
     else:
-        sql = "ALTER DATABASE {0} DISABLE REPLICATION TO ACCOUNTS {1}".format(
-            name, accounts
-        )
+        sql = "ALTER DATABASE {0} DISABLE REPLICATION TO ACCOUNTS {1}".format(name, accounts)
 
     try:
         client = SnowflakeClient(module)

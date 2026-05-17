@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -71,12 +72,7 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         signature=dict(type="str"),
         returns=dict(type="str"),
         body=dict(type="str"),
@@ -103,10 +99,7 @@ def run_module():
         parts.append("RETURNS {0} ->".format(module.params["returns"]))
         parts.append(module.params["body"])
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

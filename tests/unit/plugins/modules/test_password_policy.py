@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the password_policy module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -146,8 +147,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "password_policy": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "password_policy": {"name": "test", "owner": "SYSADMIN"}}
         assert "password_policy" in result
 
     def test_return_on_absent(self):
@@ -159,8 +159,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "password_policy": {
-            "name": "MY_PASSWORD_POLICY"}}
+        result = {"changed": True, "password_policy": {"name": "MY_PASSWORD_POLICY"}}
         assert "name" in result["password_policy"]
 
 

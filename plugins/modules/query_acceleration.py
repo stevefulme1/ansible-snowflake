@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -73,16 +74,9 @@ def run_module():
 
     wh = module.params["warehouse_name"].upper()
     enabled = str(module.params["enabled"]).upper()
-    parts = [
-        "ALTER WAREHOUSE {0} SET ENABLE_QUERY_ACCELERATION = {1}".format(
-            wh, enabled)
-    ]
+    parts = ["ALTER WAREHOUSE {0} SET ENABLE_QUERY_ACCELERATION = {1}".format(wh, enabled)]
     if module.params.get("scale_factor") is not None:
-        parts.append(
-            "QUERY_ACCELERATION_MAX_SCALE_FACTOR = {0}".format(
-                module.params["scale_factor"]
-            )
-        )
+        parts.append("QUERY_ACCELERATION_MAX_SCALE_FACTOR = {0}".format(module.params["scale_factor"]))
     sql = " ".join(parts)
 
     try:

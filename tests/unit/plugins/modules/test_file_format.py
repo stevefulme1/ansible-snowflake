@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the file_format module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -146,8 +147,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "file_format": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "file_format": {"name": "test", "owner": "SYSADMIN"}}
         assert "file_format" in result
 
     def test_return_on_absent(self):

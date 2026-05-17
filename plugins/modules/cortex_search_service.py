@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -92,12 +93,7 @@ def run_module():
         on=dict(type="str"),
         query=dict(type="str"),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -122,19 +118,11 @@ def run_module():
         if module.params.get("on"):
             parts.append("ON {0}".format(module.params["on"].upper()))
         if module.params.get("warehouse_name"):
-            parts.append(
-                "WAREHOUSE = {0}".format(
-                    module.params["warehouse_name"]))
+            parts.append("WAREHOUSE = {0}".format(module.params["warehouse_name"]))
         if module.params.get("target_lag"):
-            parts.append(
-                "TARGET_LAG = '{0}'".format(
-                    escape_sql_string(
-                        module.params["target_lag"])))
+            parts.append("TARGET_LAG = '{0}'".format(escape_sql_string(module.params["target_lag"])))
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         if module.params.get("query"):
             parts.append("AS ({0})".format(module.params["query"]))
         sql = " ".join(parts)

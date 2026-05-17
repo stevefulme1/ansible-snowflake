@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -82,9 +83,7 @@ def run_module():
 
     try:
         client = SnowflakeClient(module)
-        sql = "SELECT SYSTEM$PIPE_STATUS('{0}') AS STATUS".format(
-            escape_sql_string(module.params["name"].upper())
-        )
+        sql = "SELECT SYSTEM$PIPE_STATUS('{0}') AS STATUS".format(escape_sql_string(module.params["name"].upper()))
         rows = client.query(sql)
         status = _json.loads(rows[0]["STATUS"]) if rows else {}
     except SnowflakeError as e:
@@ -94,7 +93,7 @@ def run_module():
     _limit = module.params.get("limit") or 100
     _offset = module.params.get("offset") or 0
     if isinstance(rows, list):
-        rows = rows[_offset:_offset + _limit]
+        rows = rows[_offset : _offset + _limit]
     module.exit_json(changed=False, pipe_status=status)
 
 

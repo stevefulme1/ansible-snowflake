@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -61,12 +62,7 @@ def run_module():
     argument_spec = dict(
         warehouse_name=dict(type="str", required=True),
         monitor_name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -87,9 +83,7 @@ def run_module():
             SnowflakeClient.quote_identifier(monitor),
         )
     else:
-        sql = "ALTER WAREHOUSE {0} UNSET RESOURCE_MONITOR".format(
-            SnowflakeClient.quote_identifier(wh)
-        )
+        sql = "ALTER WAREHOUSE {0} UNSET RESOURCE_MONITOR".format(SnowflakeClient.quote_identifier(wh))
 
     try:
         client = SnowflakeClient(module)

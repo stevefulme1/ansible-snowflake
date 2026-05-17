@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -70,8 +71,7 @@ def run_module():
     user_name = module.params["user_name"].upper()
     role_name = module.params["default_role"].upper()
     sql = "ALTER USER {0} SET DEFAULT_ROLE = '{1}'".format(
-        SnowflakeClient.quote_identifier(
-            user_name), escape_sql_string(role_name)
+        SnowflakeClient.quote_identifier(user_name), escape_sql_string(role_name)
     )
 
     try:

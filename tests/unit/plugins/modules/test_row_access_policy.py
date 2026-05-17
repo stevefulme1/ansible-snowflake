@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the row_access_policy module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,10 @@ class TestDocumentation:
         assert len(row_access_policy.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "row_access_policy" in row_access_policy.DOCUMENTATION or "row_access_policy" in row_access_policy.DOCUMENTATION
+        assert (
+            "row_access_policy" in row_access_policy.DOCUMENTATION
+            or "row_access_policy" in row_access_policy.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in row_access_policy.DOCUMENTATION
@@ -146,8 +150,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "row_access_policy": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "row_access_policy": {"name": "test", "owner": "SYSADMIN"}}
         assert "row_access_policy" in result
 
     def test_return_on_absent(self):
@@ -159,8 +162,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "row_access_policy": {
-            "name": "MY_ROW_ACCESS_POLICY"}}
+        result = {"changed": True, "row_access_policy": {"name": "MY_ROW_ACCESS_POLICY"}}
         assert "name" in result["row_access_policy"]
 
 

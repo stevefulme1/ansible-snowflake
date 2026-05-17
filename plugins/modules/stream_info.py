@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -90,19 +91,15 @@ def run_module():
     try:
         client = SnowflakeClient(module)
         sql = "SHOW STREAMS"
-        if module.params.get(
-                "database_name") and module.params.get("schema_name"):
+        if module.params.get("database_name") and module.params.get("schema_name"):
             sql += " IN SCHEMA {0}.{1}".format(
                 module.params["database_name"].upper(),
                 module.params["schema_name"].upper(),
             )
         elif module.params.get("database_name"):
-            sql += " IN DATABASE {0}".format(
-                module.params["database_name"].upper())
+            sql += " IN DATABASE {0}".format(module.params["database_name"].upper())
         if module.params.get("name"):
-            sql += " LIKE '{0}'".format(
-                escape_sql_string(
-                    module.params["name"]))
+            sql += " LIKE '{0}'".format(escape_sql_string(module.params["name"]))
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
@@ -111,7 +108,7 @@ def run_module():
     _limit = module.params.get("limit") or 100
     _offset = module.params.get("offset") or 0
     if isinstance(rows, list):
-        rows = rows[_offset:_offset + _limit]
+        rows = rows[_offset : _offset + _limit]
     module.exit_json(changed=False, streams=rows)
 
 

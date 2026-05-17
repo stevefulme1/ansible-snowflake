@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -66,12 +67,7 @@ def run_module():
     argument_spec.update(
         name=dict(type="str", required=True),
         database=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         comment=dict(type="str"),
     )
 
@@ -85,20 +81,14 @@ def run_module():
     name = module.params["name"].upper()
     db = module.params["database"].upper()
     state = module.params["state"]
-    fqn = "{0}.{1}".format(
-        SnowflakeClient.quote_identifier(
-            db), SnowflakeClient.quote_identifier(name)
-    )
+    fqn = "{0}.{1}".format(SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name))
 
     if state == "absent":
         sql = "DROP DATABASE ROLE IF EXISTS {0}".format(fqn)
     else:
         parts = ["CREATE DATABASE ROLE IF NOT EXISTS {0}".format(fqn)]
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

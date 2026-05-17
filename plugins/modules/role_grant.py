@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -64,19 +65,13 @@ def run_module():
         name=dict(type="str", required=True),
         to_user=dict(type="str"),
         to_role=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[("private_key", "password"),
-                            ("to_user", "to_role")],
+        mutually_exclusive=[("private_key", "password"), ("to_user", "to_role")],
         required_one_of=[("private_key", "password"), ("to_user", "to_role")],
         supports_check_mode=True,
     )
@@ -87,17 +82,11 @@ def run_module():
     prep = "TO" if state == "present" else "FROM"
 
     if module.params.get("to_user"):
-        target = "USER {0}".format(
-            SnowflakeClient.quote_identifier(module.params["to_user"].upper())
-        )
+        target = "USER {0}".format(SnowflakeClient.quote_identifier(module.params["to_user"].upper()))
     else:
-        target = "ROLE {0}".format(
-            SnowflakeClient.quote_identifier(module.params["to_role"].upper())
-        )
+        target = "ROLE {0}".format(SnowflakeClient.quote_identifier(module.params["to_role"].upper()))
 
-    sql = "{0} ROLE {1} {2} {3}".format(
-        action, SnowflakeClient.quote_identifier(role_name), prep, target
-    )
+    sql = "{0} ROLE {1} {2} {3}".format(action, SnowflakeClient.quote_identifier(role_name), prep, target)
 
     try:
         client = SnowflakeClient(module)

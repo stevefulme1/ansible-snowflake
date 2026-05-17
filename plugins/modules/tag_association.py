@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -87,12 +88,7 @@ def run_module():
         object_name=dict(type="str", required=True),
         tag_name=dict(type="str", required=True),
         tag_value=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -110,12 +106,9 @@ def run_module():
     state = module.params["state"]
 
     if state == "present":
-        sql = "ALTER {0} {1} SET TAG {2} = '{3}'".format(
-            obj_type, obj_name, tag_name, escape_sql_string(tag_value)
-        )
+        sql = "ALTER {0} {1} SET TAG {2} = '{3}'".format(obj_type, obj_name, tag_name, escape_sql_string(tag_value))
     else:
-        sql = "ALTER {0} {1} UNSET TAG {2}".format(
-            obj_type, obj_name, tag_name)
+        sql = "ALTER {0} {1} UNSET TAG {2}".format(obj_type, obj_name, tag_name)
 
     try:
         client = SnowflakeClient(module)

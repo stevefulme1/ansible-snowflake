@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the cortex_search_service module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,10 @@ class TestDocumentation:
         assert len(cortex_search_service.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "cortex_search_service" in cortex_search_service.DOCUMENTATION or "cortex_search_service" in cortex_search_service.DOCUMENTATION
+        assert (
+            "cortex_search_service" in cortex_search_service.DOCUMENTATION
+            or "cortex_search_service" in cortex_search_service.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in cortex_search_service.DOCUMENTATION
@@ -146,8 +150,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "cortex_search_service": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "cortex_search_service": {"name": "test", "owner": "SYSADMIN"}}
         assert "cortex_search_service" in result
 
     def test_return_on_absent(self):
@@ -159,8 +162,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "cortex_search_service": {
-            "name": "MY_CORTEX_SEARCH_SERVICE"}}
+        result = {"changed": True, "cortex_search_service": {"name": "MY_CORTEX_SEARCH_SERVICE"}}
         assert "name" in result["cortex_search_service"]
 
 

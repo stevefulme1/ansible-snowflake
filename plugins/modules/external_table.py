@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -92,12 +93,7 @@ def run_module():
         location=dict(type="str"),
         file_format=dict(type="str"),
         auto_refresh=dict(type="bool", default=False),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -120,20 +116,13 @@ def run_module():
     else:
         cols = module.params.get("columns") or []
         col_defs = ", ".join(
-            "{0} {1} AS ({2})".format(
-                c["name"].upper(), c["type"].upper(), c.get("expression", "")
-            )
-            for c in cols
+            "{0} {1} AS ({2})".format(c["name"].upper(), c["type"].upper(), c.get("expression", "")) for c in cols
         )
         parts = ["CREATE EXTERNAL TABLE {0} ({1})".format(fqn, col_defs)]
         if module.params.get("location"):
             parts.append("LOCATION = {0}".format(module.params["location"]))
         if module.params.get("file_format"):
-            parts.append(
-                "FILE_FORMAT = (FORMAT_NAME = '{0}')".format(
-                    escape_sql_string(module.params["file_format"])
-                )
-            )
+            parts.append("FILE_FORMAT = (FORMAT_NAME = '{0}')".format(escape_sql_string(module.params["file_format"])))
         if module.params.get("auto_refresh"):
             parts.append("AUTO_REFRESH = TRUE")
         sql = " ".join(parts)

@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -88,9 +89,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 def table_exists(client, db, schema, name):
     fqn = "{0}.{1}".format(db, schema)
-    rows = client.query(
-        "SHOW TABLES LIKE '{0}' IN SCHEMA {1}".format(
-            name, fqn))
+    rows = client.query("SHOW TABLES LIKE '{0}' IN SCHEMA {1}".format(name, fqn))
     return len(rows) > 0
 
 
@@ -103,12 +102,7 @@ def run_module():
         transient=dict(type="bool", default=False),
         data_retention_time_in_days=dict(type="int"),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -141,43 +135,28 @@ def run_module():
             if not exists:
                 kind = "TRANSIENT TABLE" if module.params["transient"] else "TABLE"
                 cols = module.params.get("columns") or []
-                col_defs = ", ".join(
-                    "{0} {1}".format(c["name"].upper(), c["type"].upper()) for c in cols
-                )
+                col_defs = ", ".join("{0} {1}".format(c["name"].upper(), c["type"].upper()) for c in cols)
                 parts = ["CREATE {0} {1} ({2})".format(kind, fqn, col_defs)]
-                if module.params.get(
-                        "data_retention_time_in_days") is not None:
+                if module.params.get("data_retention_time_in_days") is not None:
                     parts.append(
-                        "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
-                            module.params["data_retention_time_in_days"]
-                        )
+                        "DATA_RETENTION_TIME_IN_DAYS = {0}".format(module.params["data_retention_time_in_days"])
                     )
                 if module.params.get("comment"):
-                    parts.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(
-                                module.params["comment"])))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
             else:
                 alterations = []
-                if module.params.get(
-                        "data_retention_time_in_days") is not None:
+                if module.params.get("data_retention_time_in_days") is not None:
                     alterations.append(
-                        "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
-                            module.params["data_retention_time_in_days"]
-                        )
+                        "DATA_RETENTION_TIME_IN_DAYS = {0}".format(module.params["data_retention_time_in_days"])
                     )
                 if module.params.get("comment"):
-                    alterations.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(module.params["comment"]))
-                    )
+                    alterations.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 if alterations:
-                    sql = "ALTER TABLE {0} SET {1}".format(
-                        fqn, " ".join(alterations))
+                    sql = "ALTER TABLE {0} SET {1}".format(fqn, " ".join(alterations))
                     changed = True
                     if not module.check_mode:
                         client.execute_ddl(sql)

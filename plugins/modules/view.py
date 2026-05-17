@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -82,12 +83,7 @@ def run_module():
         query=dict(type="str"),
         secure=dict(type="bool", default=False),
         comment=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -111,17 +107,10 @@ def run_module():
         q = module.params.get("query")
         if not q:
             module.fail_json(msg="query is required when state=present")
-        prefix = (
-            "CREATE OR REPLACE SECURE VIEW"
-            if module.params["secure"]
-            else "CREATE OR REPLACE VIEW"
-        )
+        prefix = "CREATE OR REPLACE SECURE VIEW" if module.params["secure"] else "CREATE OR REPLACE VIEW"
         parts = ["{0} {1} AS {2}".format(prefix, fqn, q)]
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

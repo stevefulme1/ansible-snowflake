@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -84,8 +85,7 @@ def run_module():
     )
     sql = "ALTER PIPE {0} REFRESH".format(fqn)
     if module.params.get("prefix"):
-        sql += " PREFIX = '{0}'".format(
-            escape_sql_string(module.params["prefix"]))
+        sql += " PREFIX = '{0}'".format(escape_sql_string(module.params["prefix"]))
 
     try:
         client = SnowflakeClient(module)

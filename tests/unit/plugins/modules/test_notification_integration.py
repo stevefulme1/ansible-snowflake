@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the notification_integration module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,10 @@ class TestDocumentation:
         assert len(notification_integration.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "notification_integration" in notification_integration.DOCUMENTATION or "notification_integration" in notification_integration.DOCUMENTATION
+        assert (
+            "notification_integration" in notification_integration.DOCUMENTATION
+            or "notification_integration" in notification_integration.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in notification_integration.DOCUMENTATION
@@ -52,14 +56,12 @@ class TestCreate:
 
     def test_create_new_resource(self, mock_cursor):
         mock_cursor.fetchone.return_value = None
-        result = {"changed": True,
-                  "notification_integration": {"name": "test"}}
+        result = {"changed": True, "notification_integration": {"name": "test"}}
         assert result["changed"] is True
 
     def test_create_existing_no_change(self, mock_cursor):
         mock_cursor.fetchone.return_value = ("test",)
-        result = {"changed": False,
-                  "notification_integration": {"name": "test"}}
+        result = {"changed": False, "notification_integration": {"name": "test"}}
         assert result["changed"] is False
 
     def test_create_idempotent(self, mock_cursor):
@@ -144,13 +146,11 @@ class TestReturnValues:
     """Test return value structure."""
 
     def test_return_has_changed(self):
-        result = {"changed": True,
-                  "notification_integration": {"name": "test"}}
+        result = {"changed": True, "notification_integration": {"name": "test"}}
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "notification_integration": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "notification_integration": {"name": "test", "owner": "SYSADMIN"}}
         assert "notification_integration" in result
 
     def test_return_on_absent(self):
@@ -158,13 +158,11 @@ class TestReturnValues:
         assert result["changed"] is True
 
     def test_return_unchanged_noop(self):
-        result = {"changed": False,
-                  "notification_integration": {"name": "test"}}
+        result = {"changed": False, "notification_integration": {"name": "test"}}
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "notification_integration": {
-            "name": "MY_NOTIFICATION_INTEGRATION"}}
+        result = {"changed": True, "notification_integration": {"name": "MY_NOTIFICATION_INTEGRATION"}}
         assert "name" in result["notification_integration"]
 
 

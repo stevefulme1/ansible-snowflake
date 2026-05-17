@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -73,12 +74,7 @@ def run_module():
         privilege=dict(type="str", required=True),
         on_type=dict(type="str", required=True),
         on_name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -96,12 +92,9 @@ def run_module():
     state = module.params["state"]
 
     if state == "present":
-        sql = "GRANT {0} ON {1} {2} TO SHARE {3}".format(
-            priv, on_type, on_name, share)
+        sql = "GRANT {0} ON {1} {2} TO SHARE {3}".format(priv, on_type, on_name, share)
     else:
-        sql = "REVOKE {0} ON {1} {2} FROM SHARE {3}".format(
-            priv, on_type, on_name, share
-        )
+        sql = "REVOKE {0} ON {1} {2} FROM SHARE {3}".format(priv, on_type, on_name, share)
 
     try:
         client = SnowflakeClient(module)

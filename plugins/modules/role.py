@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -61,21 +62,14 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def role_exists(client, name):
-    rows = client.query(
-        "SHOW ROLES LIKE '{0}'".format(
-            escape_sql_string(name)))
+    rows = client.query("SHOW ROLES LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         comment=dict(type="str"),
     )
     argument_spec.update(snowflake_argument_spec)
@@ -98,23 +92,15 @@ def run_module():
 
         if state == "absent":
             if exists:
-                sql = "DROP ROLE IF EXISTS {0}".format(
-                    client.quote_identifier(name))
+                sql = "DROP ROLE IF EXISTS {0}".format(client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
         else:
             if not exists:
-                parts = [
-                    "CREATE ROLE IF NOT EXISTS {0}".format(
-                        client.quote_identifier(name)
-                    )
-                ]
+                parts = ["CREATE ROLE IF NOT EXISTS {0}".format(client.quote_identifier(name))]
                 if module.params.get("comment"):
-                    parts.append(
-                        "COMMENT = '{0}'".format(
-                            escape_sql_string(
-                                module.params["comment"])))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:

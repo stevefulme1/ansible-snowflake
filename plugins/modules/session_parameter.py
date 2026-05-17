@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -70,8 +71,7 @@ def run_module():
     value = module.params.get("parameter_value")
 
     if value is not None:
-        sql = "ALTER SESSION SET {0} = '{1}'".format(
-            param, escape_sql_string(value))
+        sql = "ALTER SESSION SET {0} = '{1}'".format(param, escape_sql_string(value))
     else:
         sql = "ALTER SESSION UNSET {0}".format(param)
 

@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -108,12 +109,7 @@ def run_module():
         handler=dict(type="str"),
         packages=dict(type="list", elements="str"),
         body=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -142,19 +138,12 @@ def run_module():
             "LANGUAGE {0}".format(lang),
         ]
         if module.params.get("runtime_version"):
-            parts.append(
-                "RUNTIME_VERSION = '{0}'".format(
-                    escape_sql_string(module.params["runtime_version"]))
-            )
+            parts.append("RUNTIME_VERSION = '{0}'".format(escape_sql_string(module.params["runtime_version"])))
         if module.params.get("packages"):
-            pkg_list = ", ".join("'{0}'".format(escape_sql_string(p))
-                                 for p in module.params["packages"])
+            pkg_list = ", ".join("'{0}'".format(escape_sql_string(p)) for p in module.params["packages"])
             parts.append("PACKAGES = ({0})".format(pkg_list))
         if module.params.get("handler"):
-            parts.append(
-                "HANDLER = '{0}'".format(
-                    escape_sql_string(
-                        module.params["handler"])))
+            parts.append("HANDLER = '{0}'".format(escape_sql_string(module.params["handler"])))
         if module.params.get("body"):
             parts.append("AS $$ {0} $$".format(module.params["body"]))
         sql = " ".join(parts)

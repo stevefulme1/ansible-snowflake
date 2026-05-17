@@ -5,6 +5,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 DOCUMENTATION = r"""
 ---
@@ -79,11 +80,9 @@ def run_module():
         if module.params.get("name"):
             sql += " LIKE '{0}'".format(module.params["name"])
         if module.params.get("database_name"):
-            sql += " IN DATABASE {0}".format(
-                module.params["database_name"].upper())
+            sql += " IN DATABASE {0}".format(module.params["database_name"].upper())
         elif module.params.get("schema_name"):
-            sql += " IN SCHEMA {0}".format(
-                module.params["schema_name"].upper())
+            sql += " IN SCHEMA {0}".format(module.params["schema_name"].upper())
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))

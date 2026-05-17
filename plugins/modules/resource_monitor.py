@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -84,12 +85,7 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         credit_quota=dict(type="int"),
         frequency=dict(
             type="str",
@@ -115,47 +111,26 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        sql = "DROP RESOURCE MONITOR IF EXISTS {0}".format(
-            SnowflakeClient.quote_identifier(name)
-        )
+        sql = "DROP RESOURCE MONITOR IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
     else:
-        parts = [
-            "CREATE OR REPLACE RESOURCE MONITOR {0}".format(
-                SnowflakeClient.quote_identifier(name)
-            )
-        ]
-        parts.append(
-            "WITH CREDIT_QUOTA = {0}".format(
-                module.params.get("credit_quota", 0))
-        )
+        parts = ["CREATE OR REPLACE RESOURCE MONITOR {0}".format(SnowflakeClient.quote_identifier(name))]
+        parts.append("WITH CREDIT_QUOTA = {0}".format(module.params.get("credit_quota", 0)))
         parts.append("FREQUENCY = {0}".format(module.params["frequency"]))
         if module.params.get("start_timestamp"):
-            parts.append(
-                "START_TIMESTAMP = '{0}'".format(
-                    escape_sql_string(module.params["start_timestamp"]))
-            )
+            parts.append("START_TIMESTAMP = '{0}'".format(escape_sql_string(module.params["start_timestamp"])))
         else:
             parts.append("START_TIMESTAMP = IMMEDIATELY")
         if module.params.get("end_timestamp"):
-            parts.append(
-                "END_TIMESTAMP = '{0}'".format(
-                    escape_sql_string(
-                        module.params["end_timestamp"])))
+            parts.append("END_TIMESTAMP = '{0}'".format(escape_sql_string(module.params["end_timestamp"])))
 
         triggers = []
         if module.params.get("notify_at"):
             for pct in module.params["notify_at"]:
                 triggers.append("ON {0} PERCENT DO NOTIFY".format(pct))
         if module.params.get("suspend_at"):
-            triggers.append(
-                "ON {0} PERCENT DO SUSPEND".format(module.params["suspend_at"])
-            )
+            triggers.append("ON {0} PERCENT DO SUSPEND".format(module.params["suspend_at"]))
         if module.params.get("suspend_immediately_at"):
-            triggers.append(
-                "ON {0} PERCENT DO SUSPEND_IMMEDIATE".format(
-                    module.params["suspend_immediately_at"]
-                )
-            )
+            triggers.append("ON {0} PERCENT DO SUSPEND_IMMEDIATE".format(module.params["suspend_immediately_at"]))
         if triggers:
             parts.append("TRIGGERS " + " ".join(triggers))
         sql = " ".join(parts)

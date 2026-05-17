@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -85,12 +86,7 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         storage_provider=dict(type="str", choices=["S3", "GCS", "AZURE"]),
         storage_allowed_locations=dict(type="list", elements="str"),
         storage_blocked_locations=dict(type="list", elements="str"),
@@ -112,51 +108,31 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        sql = "DROP STORAGE INTEGRATION IF EXISTS {0}".format(
-            SnowflakeClient.quote_identifier(name)
-        )
+        sql = "DROP STORAGE INTEGRATION IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
     else:
-        parts = [
-            "CREATE OR REPLACE STORAGE INTEGRATION {0}".format(
-                SnowflakeClient.quote_identifier(name)
-            )
-        ]
+        parts = ["CREATE OR REPLACE STORAGE INTEGRATION {0}".format(SnowflakeClient.quote_identifier(name))]
         parts.append("TYPE = EXTERNAL_STAGE")
         if module.params.get("storage_provider"):
-            parts.append(
-                "STORAGE_PROVIDER = '{0}'".format(
-                    escape_sql_string(module.params["storage_provider"]))
-            )
+            parts.append("STORAGE_PROVIDER = '{0}'".format(escape_sql_string(module.params["storage_provider"])))
         if module.params.get("storage_allowed_locations"):
             locs = ", ".join(
-                "'{0}'".format(escape_sql_string(loc))
-                for loc in module.params["storage_allowed_locations"]
+                "'{0}'".format(escape_sql_string(loc)) for loc in module.params["storage_allowed_locations"]
             )
             parts.append("STORAGE_ALLOWED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_blocked_locations"):
             locs = ", ".join(
-                "'{0}'".format(escape_sql_string(loc))
-                for loc in module.params["storage_blocked_locations"]
+                "'{0}'".format(escape_sql_string(loc)) for loc in module.params["storage_blocked_locations"]
             )
             parts.append("STORAGE_BLOCKED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_aws_role_arn"):
             parts.append(
-                "STORAGE_AWS_ROLE_ARN = '{0}'".format(
-                    escape_sql_string(module.params["storage_aws_role_arn"])
-                )
+                "STORAGE_AWS_ROLE_ARN = '{0}'".format(escape_sql_string(module.params["storage_aws_role_arn"]))
             )
         if module.params.get("azure_tenant_id"):
-            parts.append(
-                "AZURE_TENANT_ID = '{0}'".format(
-                    escape_sql_string(module.params["azure_tenant_id"]))
-            )
-        parts.append("ENABLED = {0}".format(
-            str(module.params["enabled"]).upper()))
+            parts.append("AZURE_TENANT_ID = '{0}'".format(escape_sql_string(module.params["azure_tenant_id"])))
+        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

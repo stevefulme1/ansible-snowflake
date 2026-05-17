@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -86,12 +87,7 @@ def run_module():
             ],
         ),
         role=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleModule(
@@ -107,15 +103,11 @@ def run_module():
     target_role = module.params["role"]
     state = module.params["state"]
 
-    fqn = "{0}.{1}".format(
-        SnowflakeClient.quote_identifier(
-            db), SnowflakeClient.quote_identifier(name)
-    )
+    fqn = "{0}.{1}".format(SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name))
     action = "GRANT" if state == "present" else "REVOKE"
     prep = "TO" if state == "present" else "FROM"
     sql = "{0} {1} ON SCHEMA {2} {3} ROLE {4}".format(
-        action, privilege, fqn, prep, SnowflakeClient.quote_identifier(
-            target_role)
+        action, privilege, fqn, prep, SnowflakeClient.quote_identifier(target_role)
     )
 
     try:

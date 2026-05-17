@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the oauth_integration module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,10 @@ class TestDocumentation:
         assert len(oauth_integration.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "oauth_integration" in oauth_integration.DOCUMENTATION or "oauth_integration" in oauth_integration.DOCUMENTATION
+        assert (
+            "oauth_integration" in oauth_integration.DOCUMENTATION
+            or "oauth_integration" in oauth_integration.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in oauth_integration.DOCUMENTATION
@@ -146,8 +150,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "oauth_integration": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "oauth_integration": {"name": "test", "owner": "SYSADMIN"}}
         assert "oauth_integration" in result
 
     def test_return_on_absent(self):
@@ -159,8 +162,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "oauth_integration": {
-            "name": "MY_OAUTH_INTEGRATION"}}
+        result = {"changed": True, "oauth_integration": {"name": "MY_OAUTH_INTEGRATION"}}
         assert "name" in result["oauth_integration"]
 
 

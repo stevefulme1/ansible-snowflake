@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -70,21 +71,14 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def policy_exists(client, name):
-    rows = client.query(
-        "SHOW NETWORK POLICIES LIKE '{0}'".format(
-            escape_sql_string(name)))
+    rows = client.query("SHOW NETWORK POLICIES LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
         allowed_ip_list=dict(type="list", elements="str", default=[]),
         blocked_ip_list=dict(type="list", elements="str", default=[]),
         comment=dict(type="str"),
@@ -100,10 +94,8 @@ def run_module():
 
     name = module.params["name"].upper()
     state = module.params["state"]
-    allowed = ",".join("'{0}'".format(escape_sql_string(ip))
-                       for ip in module.params["allowed_ip_list"])
-    blocked = ",".join("'{0}'".format(escape_sql_string(ip))
-                       for ip in module.params["blocked_ip_list"])
+    allowed = ",".join("'{0}'".format(escape_sql_string(ip)) for ip in module.params["allowed_ip_list"])
+    blocked = ",".join("'{0}'".format(escape_sql_string(ip)) for ip in module.params["blocked_ip_list"])
     changed = False
     sql = ""
 
@@ -113,9 +105,7 @@ def run_module():
 
         if state == "absent":
             if exists:
-                sql = "DROP NETWORK POLICY IF EXISTS {0}".format(
-                    client.quote_identifier(name)
-                )
+                sql = "DROP NETWORK POLICY IF EXISTS {0}".format(client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
@@ -126,20 +116,13 @@ def run_module():
             if blocked:
                 props.append("BLOCKED_IP_LIST = ({0})".format(blocked))
             if module.params.get("comment"):
-                props.append(
-                    "COMMENT = '{0}'".format(
-                        escape_sql_string(
-                            module.params["comment"])))
+                props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
             if not exists:
-                sql = "CREATE NETWORK POLICY {0} {1}".format(
-                    client.quote_identifier(name), " ".join(props)
-                )
+                sql = "CREATE NETWORK POLICY {0} {1}".format(client.quote_identifier(name), " ".join(props))
                 changed = True
             else:
-                sql = "ALTER NETWORK POLICY {0} SET {1}".format(
-                    client.quote_identifier(name), " ".join(props)
-                )
+                sql = "ALTER NETWORK POLICY {0} SET {1}".format(client.quote_identifier(name), " ".join(props))
                 changed = True
 
             if not module.check_mode:

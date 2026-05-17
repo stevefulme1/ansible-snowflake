@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -86,15 +87,8 @@ from ansible.module_utils.basic import AnsibleModule
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
-        stage_type=dict(
-            type="str", default="internal", choices=["internal", "external"]
-        ),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
+        stage_type=dict(type="str", default="internal", choices=["internal", "external"]),
         url=dict(type="str"),
         storage_integration=dict(type="str"),
         file_format=dict(type="str"),
@@ -117,30 +111,16 @@ def run_module():
         sql = "DROP STAGE IF EXISTS {0}".format(name)
     else:
         parts = ["CREATE OR REPLACE STAGE {0}".format(name)]
-        if module.params["stage_type"] == "external" and module.params.get(
-                "url"):
-            parts.append(
-                "URL = '{0}'".format(
-                    escape_sql_string(
-                        module.params["url"])))
+        if module.params["stage_type"] == "external" and module.params.get("url"):
+            parts.append("URL = '{0}'".format(escape_sql_string(module.params["url"])))
         if module.params.get("storage_integration"):
-            parts.append(
-                "STORAGE_INTEGRATION = {0}".format(
-                    module.params["storage_integration"])
-            )
+            parts.append("STORAGE_INTEGRATION = {0}".format(module.params["storage_integration"]))
         if module.params.get("file_format"):
-            parts.append(
-                "FILE_FORMAT = ({0})".format(
-                    module.params["file_format"]))
+            parts.append("FILE_FORMAT = ({0})".format(module.params["file_format"]))
         if module.params.get("copy_options"):
-            parts.append(
-                "COPY_OPTIONS = ({0})".format(
-                    module.params["copy_options"]))
+            parts.append("COPY_OPTIONS = ({0})".format(module.params["copy_options"]))
         if module.params.get("comment"):
-            parts.append(
-                "COMMENT = '{0}'".format(
-                    escape_sql_string(
-                        module.params["comment"])))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

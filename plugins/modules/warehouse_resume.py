@@ -61,8 +61,7 @@ def run_module():
     )
 
     name = module.params["name"].upper()
-    sql = "ALTER WAREHOUSE {0} RESUME".format(
-        SnowflakeClient.quote_identifier(name))
+    sql = "ALTER WAREHOUSE {0} RESUME".format(SnowflakeClient.quote_identifier(name))
 
     try:
         client = SnowflakeClient(module)

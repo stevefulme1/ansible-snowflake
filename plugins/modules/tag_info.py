@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -89,9 +90,7 @@ def run_module():
                 client.quote_identifier(module.params["schema_name"].upper()),
             )
         elif module.params.get("database"):
-            sql += " IN DATABASE {0}".format(
-                client.quote_identifier(module.params["database"].upper())
-            )
+            sql += " IN DATABASE {0}".format(client.quote_identifier(module.params["database"].upper()))
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
@@ -100,7 +99,7 @@ def run_module():
     _limit = module.params.get("limit") or 100
     _offset = module.params.get("offset") or 0
     if isinstance(rows, list):
-        rows = rows[_offset:_offset + _limit]
+        rows = rows[_offset : _offset + _limit]
     module.exit_json(changed=False, tags=rows)
 
 

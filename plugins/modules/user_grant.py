@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -67,12 +68,7 @@ def run_module():
         privilege=dict(type="str", required=True),
         on=dict(type="str", required=True),
         to_role=dict(type="str", required=True),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -90,9 +86,7 @@ def run_module():
 
     action = "GRANT" if state == "present" else "REVOKE"
     prep = "TO" if state == "present" else "FROM"
-    sql = "{0} {1} ON {2} {3} ROLE {4}".format(
-        action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role)
-    )
+    sql = "{0} {1} ON {2} {3} ROLE {4}".format(action, privilege, on, prep, SnowflakeClient.quote_identifier(to_role))
 
     try:
         client = SnowflakeClient(module)

@@ -5,6 +5,7 @@
 """Comprehensive unit tests for the authentication_policy module."""
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 import pytest
@@ -21,7 +22,10 @@ class TestDocumentation:
         assert len(authentication_policy.DOCUMENTATION) > 0
 
     def test_documentation_has_module_name(self):
-        assert "authentication_policy" in authentication_policy.DOCUMENTATION or "authentication_policy" in authentication_policy.DOCUMENTATION
+        assert (
+            "authentication_policy" in authentication_policy.DOCUMENTATION
+            or "authentication_policy" in authentication_policy.DOCUMENTATION
+        )
 
     def test_documentation_has_short_description(self):
         assert "short_description" in authentication_policy.DOCUMENTATION
@@ -146,8 +150,7 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "authentication_policy": {
-            "name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "authentication_policy": {"name": "test", "owner": "SYSADMIN"}}
         assert "authentication_policy" in result
 
     def test_return_on_absent(self):
@@ -159,8 +162,7 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "authentication_policy": {
-            "name": "MY_AUTHENTICATION_POLICY"}}
+        result = {"changed": True, "authentication_policy": {"name": "MY_AUTHENTICATION_POLICY"}}
         assert "name" in result["authentication_policy"]
 
 

@@ -4,6 +4,7 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 DOCUMENTATION = r"""
@@ -71,12 +72,7 @@ def run_module():
         database=dict(type="str", required=True),
         to_role=dict(type="str"),
         to_database_role=dict(type="str"),
-        state=dict(
-            type="str",
-            default="present",
-            choices=[
-                "present",
-                "absent"]),
+        state=dict(type="str", default="present", choices=["present", "absent"]),
     )
 
     module = AnsibleModule(
@@ -85,8 +81,7 @@ def run_module():
             ("private_key", "password"),
             ("to_role", "to_database_role"),
         ],
-        required_one_of=[("private_key", "password"),
-                         ("to_role", "to_database_role")],
+        required_one_of=[("private_key", "password"), ("to_role", "to_database_role")],
         supports_check_mode=True,
     )
 
@@ -102,9 +97,7 @@ def run_module():
     prep = "TO" if state == "present" else "FROM"
 
     if module.params.get("to_role"):
-        target = "ROLE {0}".format(
-            SnowflakeClient.quote_identifier(module.params["to_role"].upper())
-        )
+        target = "ROLE {0}".format(SnowflakeClient.quote_identifier(module.params["to_role"].upper()))
     else:
         tdb_role = module.params["to_database_role"].upper()
         target = "DATABASE ROLE {0}.{1}".format(
