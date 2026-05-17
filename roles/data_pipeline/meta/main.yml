@@ -7,6 +7,6 @@ galaxy_info:
   min_ansible_version: "2.14"
   platforms:
     - name: EL
-      versions: [8, 9]
+      versions: [all]
   galaxy_tags: [snowflake, cloud, data, pipeline, etl]
 dependencies: []

@@ -9,7 +9,7 @@
 - name: Configure Snowflake warehouse
   block:
     - name: Create or update warehouse
-      snowflake.snowflake.warehouse:
+      stevefulme1.snowflake.warehouse:
         name: "{{ wh_name }}"
         warehouse_size: "{{ wh_size }}"
         warehouse_type: "{{ wh_type }}"
@@ -28,7 +28,7 @@
       register: _warehouse
 
     - name: Create resource monitor
-      snowflake.snowflake.resource_monitor:
+      stevefulme1.snowflake.resource_monitor:
         name: "{{ wh_resource_monitor_name | default(wh_name + '_MONITOR') }}"
         credit_quota: "{{ wh_credit_quota }}"
         notify_triggers:
@@ -47,7 +47,7 @@
       when: wh_resource_monitor_enabled
 
     - name: Apply tags to warehouse
-      snowflake.snowflake.tag_association:
+      stevefulme1.snowflake.tag_association:
         object_name: "{{ wh_name }}"
         object_type: "WAREHOUSE"
         tag_name: "{{ item.key }}"

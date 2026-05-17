@@ -9,7 +9,7 @@
 - name: Configure data pipeline
   block:
     - name: Create file formats
-      snowflake.snowflake.execute_sql:
+      stevefulme1.snowflake.execute_sql:
         sql: >-
           CREATE OR REPLACE FILE FORMAT {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
           TYPE = '{{ item.type }}'
@@ -31,7 +31,7 @@
       when: pipeline_file_formats | length > 0
 
     - name: Create stages
-      snowflake.snowflake.stage:
+      stevefulme1.snowflake.stage:
         name: "{{ item.name }}"
         database: "{{ pipeline_database }}"
         schema: "{{ pipeline_schema }}"
@@ -50,7 +50,7 @@
       when: pipeline_stages | length > 0
 
     - name: Create pipes
-      snowflake.snowflake.execute_sql:
+      stevefulme1.snowflake.execute_sql:
         sql: >-
           CREATE OR REPLACE PIPE {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
           {% if item.auto_ingest | default(false) %}AUTO_INGEST = TRUE{% endif %}
@@ -66,7 +66,7 @@
       when: pipeline_pipes | length > 0
 
     - name: Create streams
-      snowflake.snowflake.execute_sql:
+      stevefulme1.snowflake.execute_sql:
         sql: >-
           CREATE OR REPLACE STREAM {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
           ON TABLE {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.source_table }}
@@ -83,7 +83,7 @@
       when: pipeline_streams | length > 0
 
     - name: Create tasks
-      snowflake.snowflake.execute_sql:
+      stevefulme1.snowflake.execute_sql:
         sql: >-
           CREATE OR REPLACE TASK {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }}
           WAREHOUSE = '{{ item.warehouse | default(sf_warehouse) }}'
@@ -103,7 +103,7 @@
       when: pipeline_tasks | length > 0
 
     - name: Enable tasks
-      snowflake.snowflake.execute_sql:
+      stevefulme1.snowflake.execute_sql:
         sql: "ALTER TASK {{ pipeline_database }}.{{ pipeline_schema }}.{{ item.name }} RESUME"
         account: "{{ sf_account }}"
         user: "{{ sf_user }}"
