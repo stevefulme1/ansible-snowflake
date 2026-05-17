@@ -57,6 +57,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -88,7 +89,7 @@ def run_module():
     else:
         parts = ["CREATE DATABASE ROLE IF NOT EXISTS {0}".format(fqn)]
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

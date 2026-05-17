@@ -92,6 +92,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -137,13 +138,13 @@ def run_module():
         ]
         if module.params.get("runtime_version"):
             parts.append(
-                "RUNTIME_VERSION = '{0}'".format(module.params["runtime_version"])
+                "RUNTIME_VERSION = '{0}'".format(escape_sql_string(module.params["runtime_version"]))
             )
         if module.params.get("packages"):
-            pkg_list = ", ".join("'{0}'".format(p) for p in module.params["packages"])
+            pkg_list = ", ".join("'{0}'".format(escape_sql_string(p)) for p in module.params["packages"])
             parts.append("PACKAGES = ({0})".format(pkg_list))
         if module.params.get("handler"):
-            parts.append("HANDLER = '{0}'".format(module.params["handler"]))
+            parts.append("HANDLER = '{0}'".format(escape_sql_string(module.params["handler"])))
         if module.params.get("body"):
             parts.append("AS $$ {0} $$".format(module.params["body"]))
         sql = " ".join(parts)

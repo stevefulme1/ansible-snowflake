@@ -44,6 +44,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 import json as _json
@@ -65,7 +66,7 @@ def run_module():
     try:
         client = SnowflakeClient(module)
         sql = "SELECT SYSTEM$PIPE_STATUS('{0}') AS STATUS".format(
-            module.params["name"].upper()
+            escape_sql_string(module.params["name"].upper())
         )
         rows = client.query(sql)
         status = _json.loads(rows[0]["STATUS"]) if rows else {}

@@ -49,6 +49,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -69,7 +70,7 @@ def run_module():
     user_name = module.params["user_name"].upper()
     role_name = module.params["default_role"].upper()
     sql = "ALTER USER {0} SET DEFAULT_ROLE = '{1}'".format(
-        SnowflakeClient.quote_identifier(user_name), role_name
+        SnowflakeClient.quote_identifier(user_name), escape_sql_string(role_name)
     )
 
     try:

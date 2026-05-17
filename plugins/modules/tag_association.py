@@ -64,6 +64,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -105,7 +106,7 @@ def run_module():
 
     if state == "present":
         sql = "ALTER {0} {1} SET TAG {2} = '{3}'".format(
-            obj_type, obj_name, tag_name, tag_value
+            obj_type, obj_name, tag_name, escape_sql_string(tag_value)
         )
     else:
         sql = "ALTER {0} {1} UNSET TAG {2}".format(obj_type, obj_name, tag_name)

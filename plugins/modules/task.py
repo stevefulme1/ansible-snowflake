@@ -80,6 +80,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -140,7 +141,7 @@ def run_module():
                         "WAREHOUSE = {0}".format(module.params["warehouse_name"])
                     )
                 if module.params.get("schedule"):
-                    parts.append("SCHEDULE = '{0}'".format(module.params["schedule"]))
+                    parts.append("SCHEDULE = '{0}'".format(escape_sql_string(module.params["schedule"])))
                 if module.params.get("after"):
                     parts.append(
                         "AFTER {0}.{1}.{2}".format(
@@ -148,7 +149,7 @@ def run_module():
                         )
                     )
                 if module.params.get("comment"):
-                    parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 if module.params.get("when_condition"):
                     parts.append("WHEN {0}".format(module.params["when_condition"]))
                 parts.append("AS {0}".format(stmt))

@@ -77,6 +77,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -106,11 +107,11 @@ def run_module():
         sql = "DROP FILE FORMAT IF EXISTS {0}".format(name)
     else:
         parts = ["CREATE OR REPLACE FILE FORMAT {0}".format(name)]
-        parts.append("TYPE = '{0}'".format(module.params["format_type"]))
+        parts.append("TYPE = '{0}'".format(escape_sql_string(module.params["format_type"])))
         for key, val in module.params["options"].items():
-            parts.append("{0} = '{1}'".format(key.upper(), val))
+            parts.append("{0} = '{1}'".format(escape_sql_string(key.upper()), val))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

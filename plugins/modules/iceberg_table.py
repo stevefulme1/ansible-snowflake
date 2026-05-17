@@ -71,6 +71,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -105,14 +106,14 @@ def run_module():
     else:
         parts = [
             "CREATE ICEBERG TABLE IF NOT EXISTS {0}".format(fqn),
-            "CATALOG = '{0}'".format(module.params["catalog"].upper()),
+            "CATALOG = '{0}'".format(escape_sql_string(module.params["catalog"].upper())),
         ]
         if module.params.get("external_volume"):
             parts.append(
-                "EXTERNAL_VOLUME = '{0}'".format(module.params["external_volume"])
+                "EXTERNAL_VOLUME = '{0}'".format(escape_sql_string(module.params["external_volume"]))
             )
         if module.params.get("base_location"):
-            parts.append("BASE_LOCATION = '{0}'".format(module.params["base_location"]))
+            parts.append("BASE_LOCATION = '{0}'".format(escape_sql_string(module.params["base_location"])))
         sql = " ".join(parts)
 
     try:

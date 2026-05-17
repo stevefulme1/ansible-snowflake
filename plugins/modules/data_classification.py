@@ -48,6 +48,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -66,7 +67,7 @@ def run_module():
 
     table = module.params["table"]
     sql = "CALL ASSOCIATE_SEMANTIC_CATEGORY_TAGS('{0}', EXTRACT_SEMANTIC_CATEGORIES('{0}'))".format(
-        table
+        escape_sql_string(table)
     )
 
     result = []

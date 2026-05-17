@@ -14,6 +14,13 @@ from ansible.module_utils.urls import open_url
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
 
 
+def escape_sql_string(value):
+    """Escape single quotes for SQL string literals."""
+    if value is None:
+        return None
+    return str(value).replace("'", "''")
+
+
 class SnowflakeError(Exception):
     """Exception raised for Snowflake API errors."""
 

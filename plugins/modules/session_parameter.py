@@ -48,6 +48,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -69,7 +70,7 @@ def run_module():
     value = module.params.get("parameter_value")
 
     if value is not None:
-        sql = "ALTER SESSION SET {0} = '{1}'".format(param, value)
+        sql = "ALTER SESSION SET {0} = '{1}'".format(param, escape_sql_string(value))
     else:
         sql = "ALTER SESSION UNSET {0}".format(param)
 

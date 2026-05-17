@@ -79,6 +79,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -125,7 +126,7 @@ def run_module():
         if module.params.get("file_format"):
             parts.append(
                 "FILE_FORMAT = (FORMAT_NAME = '{0}')".format(
-                    module.params["file_format"]
+                    escape_sql_string(module.params["file_format"])
                 )
             )
         if module.params.get("auto_refresh"):

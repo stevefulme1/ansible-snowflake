@@ -67,11 +67,12 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
 def schema_exists(client, db, name):
-    sql = "SHOW SCHEMAS LIKE '{0}'".format(name)
+    sql = "SHOW SCHEMAS LIKE '{0}'".format(escape_sql_string(name))
     if db:
         sql += " IN DATABASE {0}".format(client.quote_identifier(db))
     rows = client.query(sql)
@@ -138,7 +139,7 @@ def run_module():
                         )
                     )
                 if module.params.get("comment"):
-                    parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
@@ -153,7 +154,7 @@ def run_module():
                     )
                 if module.params.get("comment"):
                     alterations.append(
-                        "COMMENT = '{0}'".format(module.params["comment"])
+                        "COMMENT = '{0}'".format(escape_sql_string(module.params["comment"]))
                     )
                 if alterations:
                     sql = "ALTER SCHEMA {0} SET {1}".format(fqn, " ".join(alterations))

@@ -61,6 +61,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -93,7 +94,7 @@ def run_module():
         ),
     ]
     if module.params.get("comment"):
-        props.append("COMMENT = '{0}'".format(module.params["comment"]))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     if state == "absent":
         sql = "DROP SESSION POLICY IF EXISTS {0}".format(

@@ -79,6 +79,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -112,7 +113,7 @@ def run_module():
     else:
         parts = ["CREATE OR REPLACE STAGE {0}".format(name)]
         if module.params["stage_type"] == "external" and module.params.get("url"):
-            parts.append("URL = '{0}'".format(module.params["url"]))
+            parts.append("URL = '{0}'".format(escape_sql_string(module.params["url"])))
         if module.params.get("storage_integration"):
             parts.append(
                 "STORAGE_INTEGRATION = {0}".format(module.params["storage_integration"])
@@ -122,7 +123,7 @@ def run_module():
         if module.params.get("copy_options"):
             parts.append("COPY_OPTIONS = ({0})".format(module.params["copy_options"]))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

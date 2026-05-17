@@ -50,6 +50,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -85,7 +86,7 @@ def run_module():
     name = module.params["name"].upper()
     size = module.params["size"]
     sql = "ALTER WAREHOUSE {0} SET WAREHOUSE_SIZE = '{1}'".format(
-        SnowflakeClient.quote_identifier(name), size
+        SnowflakeClient.quote_identifier(name), escape_sql_string(size)
     )
 
     try:

@@ -74,6 +74,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -116,7 +117,7 @@ def run_module():
         if module.params["show_initial_rows"]:
             parts.append("SHOW_INITIAL_ROWS = TRUE")
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

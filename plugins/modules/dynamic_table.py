@@ -71,6 +71,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -108,7 +109,7 @@ def run_module():
             module.fail_json(msg="query is required when state=present")
         parts = ["CREATE OR REPLACE DYNAMIC TABLE {0}".format(fqn)]
         if module.params.get("target_lag"):
-            parts.append("TARGET_LAG = '{0}'".format(module.params["target_lag"]))
+            parts.append("TARGET_LAG = '{0}'".format(escape_sql_string(module.params["target_lag"])))
         if module.params.get("warehouse_name"):
             parts.append("WAREHOUSE = {0}".format(module.params["warehouse_name"]))
         parts.append("AS {0}".format(q))

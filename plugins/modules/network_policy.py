@@ -65,11 +65,12 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
 def policy_exists(client, name):
-    rows = client.query("SHOW NETWORK POLICIES LIKE '{0}'".format(name))
+    rows = client.query("SHOW NETWORK POLICIES LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
@@ -92,8 +93,8 @@ def run_module():
 
     name = module.params["name"].upper()
     state = module.params["state"]
-    allowed = ",".join("'{0}'".format(ip) for ip in module.params["allowed_ip_list"])
-    blocked = ",".join("'{0}'".format(ip) for ip in module.params["blocked_ip_list"])
+    allowed = ",".join("'{0}'".format(escape_sql_string(ip)) for ip in module.params["allowed_ip_list"])
+    blocked = ",".join("'{0}'".format(escape_sql_string(ip)) for ip in module.params["blocked_ip_list"])
     changed = False
     sql = ""
 
@@ -116,7 +117,7 @@ def run_module():
             if blocked:
                 props.append("BLOCKED_IP_LIST = ({0})".format(blocked))
             if module.params.get("comment"):
-                props.append("COMMENT = '{0}'".format(module.params["comment"]))
+                props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
             if not exists:
                 sql = "CREATE NETWORK POLICY {0} {1}".format(

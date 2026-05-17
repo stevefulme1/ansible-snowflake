@@ -77,6 +77,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -124,12 +125,12 @@ def run_module():
         parts.append("FREQUENCY = {0}".format(module.params["frequency"]))
         if module.params.get("start_timestamp"):
             parts.append(
-                "START_TIMESTAMP = '{0}'".format(module.params["start_timestamp"])
+                "START_TIMESTAMP = '{0}'".format(escape_sql_string(module.params["start_timestamp"]))
             )
         else:
             parts.append("START_TIMESTAMP = IMMEDIATELY")
         if module.params.get("end_timestamp"):
-            parts.append("END_TIMESTAMP = '{0}'".format(module.params["end_timestamp"]))
+            parts.append("END_TIMESTAMP = '{0}'".format(escape_sql_string(module.params["end_timestamp"])))
 
         triggers = []
         if module.params.get("notify_at"):
