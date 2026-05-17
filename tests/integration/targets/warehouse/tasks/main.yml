@@ -1,0 +1,52 @@
+---
+# Integration tests for stevefulme1.snowflake.warehouse
+# These tests require a live Snowflake account.
+# Set environment variables: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+
+- name: Set test resource name
+  ansible.builtin.set_fact:
+    test_warehouse_name: "ANSIBLE_TEST_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+
+- name: Create warehouse
+  stevefulme1.snowflake.warehouse:
+    name: "{{ test_warehouse_name }}"
+    size: XSMALL
+    auto_suspend: 60
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: result
+
+- name: Verify creation
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Alter warehouse size
+  stevefulme1.snowflake.warehouse:
+    name: "{{ test_warehouse_name }}"
+    size: SMALL
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: result
+
+- name: Verify alter
+  ansible.builtin.assert:
+    that:
+      - result is changed
+      - "'ALTER WAREHOUSE' in result.sql"
+
+- name: Delete warehouse
+  stevefulme1.snowflake.warehouse:
+    name: "{{ test_warehouse_name }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: result
+
+- name: Verify deletion
+  ansible.builtin.assert:
+    that:
+      - result is changed

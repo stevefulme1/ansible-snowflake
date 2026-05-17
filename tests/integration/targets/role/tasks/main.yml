@@ -1,0 +1,36 @@
+---
+# Integration tests for stevefulme1.snowflake.role
+# These tests require a live Snowflake account.
+# Set environment variables: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+
+- name: Set test resource name
+  ansible.builtin.set_fact:
+    test_role_name: "ANSIBLE_TEST_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+
+- name: Create role
+  stevefulme1.snowflake.role:
+    name: "{{ test_role_name }}"
+    comment: "Integration test role"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: result
+
+- name: Verify creation
+  ansible.builtin.assert:
+    that:
+      - result is changed
+
+- name: Delete role
+  stevefulme1.snowflake.role:
+    name: "{{ test_role_name }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: result
+
+- name: Verify deletion
+  ansible.builtin.assert:
+    that:
+      - result is changed
