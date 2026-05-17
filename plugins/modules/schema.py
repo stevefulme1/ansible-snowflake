@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -62,14 +70,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def schema_exists(client, db, name):
     sql = "SHOW SCHEMAS LIKE '{0}'".format(escape_sql_string(name))
@@ -83,7 +83,12 @@ def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
         database=dict(type="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         transient=dict(type="bool", default=False),
         data_retention_time_in_days=dict(type="int"),
         comment=dict(type="str"),
@@ -116,7 +121,9 @@ def run_module():
     try:
         client = SnowflakeClient(module)
         fqn = (
-            "{0}.{1}".format(client.quote_identifier(db), client.quote_identifier(name))
+            "{0}.{1}".format(
+                client.quote_identifier(db),
+                client.quote_identifier(name))
             if db
             else client.quote_identifier(name)
         )
@@ -132,21 +139,26 @@ def run_module():
             if not exists:
                 kind = "TRANSIENT SCHEMA" if module.params["transient"] else "SCHEMA"
                 parts = ["CREATE {0} IF NOT EXISTS {1}".format(kind, fqn)]
-                if module.params.get("data_retention_time_in_days") is not None:
+                if module.params.get(
+                        "data_retention_time_in_days") is not None:
                     parts.append(
                         "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
                             module.params["data_retention_time_in_days"]
                         )
                     )
                 if module.params.get("comment"):
-                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+                    parts.append(
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(
+                                module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
             else:
                 alterations = []
-                if module.params.get("data_retention_time_in_days") is not None:
+                if module.params.get(
+                        "data_retention_time_in_days") is not None:
                     alterations.append(
                         "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
                             module.params["data_retention_time_in_days"]
@@ -154,10 +166,12 @@ def run_module():
                     )
                 if module.params.get("comment"):
                     alterations.append(
-                        "COMMENT = '{0}'".format(escape_sql_string(module.params["comment"]))
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(module.params["comment"]))
                     )
                 if alterations:
-                    sql = "ALTER SCHEMA {0} SET {1}".format(fqn, " ".join(alterations))
+                    sql = "ALTER SCHEMA {0} SET {1}".format(
+                        fqn, " ".join(alterations))
                     changed = True
                     if not module.check_mode:
                         client.execute_ddl(sql)

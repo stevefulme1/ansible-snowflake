@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -52,19 +60,16 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         allowed_values=dict(type="list", elements="str"),
         comment=dict(type="str"),
     )
@@ -81,16 +86,22 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        sql = "DROP TAG IF EXISTS {0}".format(SnowflakeClient.quote_identifier(name))
+        sql = "DROP TAG IF EXISTS {0}".format(
+            SnowflakeClient.quote_identifier(name))
     else:
         parts = [
-            "CREATE OR REPLACE TAG {0}".format(SnowflakeClient.quote_identifier(name))
+            "CREATE OR REPLACE TAG {0}".format(
+                SnowflakeClient.quote_identifier(name))
         ]
         if module.params.get("allowed_values"):
-            vals = ", ".join("'{0}'".format(escape_sql_string(v)) for v in module.params["allowed_values"])
+            vals = ", ".join("'{0}'".format(escape_sql_string(v))
+                             for v in module.params["allowed_values"])
             parts.append("ALLOWED_VALUES {0}".format(vals))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+            parts.append(
+                "COMMENT = '{0}'".format(
+                    escape_sql_string(
+                        module.params["comment"])))
         sql = " ".join(parts)
 
     try:

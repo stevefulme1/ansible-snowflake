@@ -1,8 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -60,13 +67,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-)
-
 
 def run_module():
     argument_spec = dict(snowflake_argument_spec)
@@ -86,7 +86,12 @@ def run_module():
             ],
         ),
         role=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
 
     module = AnsibleModule(
@@ -103,12 +108,14 @@ def run_module():
     state = module.params["state"]
 
     fqn = "{0}.{1}".format(
-        SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name)
+        SnowflakeClient.quote_identifier(
+            db), SnowflakeClient.quote_identifier(name)
     )
     action = "GRANT" if state == "present" else "REVOKE"
     prep = "TO" if state == "present" else "FROM"
     sql = "{0} {1} ON SCHEMA {2} {3} ROLE {4}".format(
-        action, privilege, fqn, prep, SnowflakeClient.quote_identifier(target_role)
+        action, privilege, fqn, prep, SnowflakeClient.quote_identifier(
+            target_role)
     )
 
     try:

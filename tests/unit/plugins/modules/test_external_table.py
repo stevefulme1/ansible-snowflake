@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """Comprehensive unit tests for the external_table module."""
 
@@ -7,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from ansible_collections.stevefulme1.snowflake.plugins.modules import external_table
 
@@ -145,7 +146,8 @@ class TestReturnValues:
         assert "changed" in result
 
     def test_return_has_resource(self):
-        result = {"changed": True, "external_table": {"name": "test", "owner": "SYSADMIN"}}
+        result = {"changed": True, "external_table": {
+            "name": "test", "owner": "SYSADMIN"}}
         assert "external_table" in result
 
     def test_return_on_absent(self):
@@ -157,7 +159,8 @@ class TestReturnValues:
         assert result["changed"] is False
 
     def test_return_contains_name(self):
-        result = {"changed": True, "external_table": {"name": "MY_EXTERNAL_TABLE"}}
+        result = {"changed": True, "external_table": {
+            "name": "MY_EXTERNAL_TABLE"}}
         assert "name" in result["external_table"]
 
 

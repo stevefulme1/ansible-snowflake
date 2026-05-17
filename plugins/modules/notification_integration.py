@@ -1,9 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -67,14 +75,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -85,7 +85,12 @@ def run_module():
         aws_sns_topic_arn=dict(type="str"),
         aws_sns_role_arn=dict(type="str"),
         comment=dict(type="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -104,7 +109,8 @@ def run_module():
     else:
         provider = module.params.get("notification_provider")
         if not provider:
-            module.fail_json(msg="notification_provider required when state=present")
+            module.fail_json(
+                msg="notification_provider required when state=present")
         parts = [
             "CREATE OR REPLACE NOTIFICATION INTEGRATION {0}".format(name),
             "TYPE = QUEUE",
@@ -114,14 +120,19 @@ def run_module():
         ]
         if module.params.get("aws_sns_topic_arn"):
             parts.append(
-                "AWS_SNS_TOPIC_ARN = '{0}'".format(escape_sql_string(module.params["aws_sns_topic_arn"]))
+                "AWS_SNS_TOPIC_ARN = '{0}'".format(
+                    escape_sql_string(module.params["aws_sns_topic_arn"]))
             )
         if module.params.get("aws_sns_role_arn"):
             parts.append(
-                "AWS_SNS_ROLE_ARN = '{0}'".format(escape_sql_string(module.params["aws_sns_role_arn"]))
+                "AWS_SNS_ROLE_ARN = '{0}'".format(
+                    escape_sql_string(module.params["aws_sns_role_arn"]))
             )
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+            parts.append(
+                "COMMENT = '{0}'".format(
+                    escape_sql_string(
+                        module.params["comment"])))
         sql = " ".join(parts)
 
     try:

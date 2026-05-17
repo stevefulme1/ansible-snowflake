@@ -48,7 +48,6 @@
         account: "{{ sf_account }}"
         user: "{{ sf_user }}"
         password: "{{ sf_password }}"
-        role: "{{ sf_role }}"
         state: present
       loop: "{{ sec_roles | subelements('granted_to_roles', skip_missing=True) }}"
       loop_control:

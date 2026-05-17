@@ -1,9 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -66,13 +73,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -82,7 +82,12 @@ def run_module():
         query=dict(type="str"),
         secure=dict(type="bool", default=False),
         cluster_by=dict(type="list", elements="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -114,7 +119,8 @@ def run_module():
         parts = ["{0} {1}".format(prefix, fqn)]
         if module.params.get("cluster_by"):
             parts.append(
-                "CLUSTER BY ({0})".format(", ".join(module.params["cluster_by"]))
+                "CLUSTER BY ({0})".format(
+                    ", ".join(module.params["cluster_by"]))
             )
         parts.append("AS {0}".format(q))
         sql = " ".join(parts)

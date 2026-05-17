@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -85,23 +93,22 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         password_min_length=dict(type="int", default=8, no_log=False),
         password_max_length=dict(type="int", default=256, no_log=False),
-        password_min_upper_case_chars=dict(type="int", default=1, no_log=False),
-        password_min_lower_case_chars=dict(type="int", default=1, no_log=False),
+        password_min_upper_case_chars=dict(
+            type="int", default=1, no_log=False),
+        password_min_lower_case_chars=dict(
+            type="int", default=1, no_log=False),
         password_min_numeric_chars=dict(type="int", default=1, no_log=False),
         password_min_special_chars=dict(type="int", default=0, no_log=False),
         password_max_age_days=dict(type="int", default=90, no_log=False),
@@ -124,8 +131,10 @@ def run_module():
     sql = ""
 
     props = [
-        "PASSWORD_MIN_LENGTH = {0}".format(module.params["password_min_length"]),
-        "PASSWORD_MAX_LENGTH = {0}".format(module.params["password_max_length"]),
+        "PASSWORD_MIN_LENGTH = {0}".format(
+            module.params["password_min_length"]),
+        "PASSWORD_MAX_LENGTH = {0}".format(
+            module.params["password_max_length"]),
         "PASSWORD_MIN_UPPER_CASE_CHARS = {0}".format(
             module.params["password_min_upper_case_chars"]
         ),
@@ -138,14 +147,19 @@ def run_module():
         "PASSWORD_MIN_SPECIAL_CHARS = {0}".format(
             module.params["password_min_special_chars"]
         ),
-        "PASSWORD_MAX_AGE_DAYS = {0}".format(module.params["password_max_age_days"]),
-        "PASSWORD_MAX_RETRIES = {0}".format(module.params["password_max_retries"]),
+        "PASSWORD_MAX_AGE_DAYS = {0}".format(
+            module.params["password_max_age_days"]),
+        "PASSWORD_MAX_RETRIES = {0}".format(
+            module.params["password_max_retries"]),
         "PASSWORD_LOCKOUT_TIME_MINS = {0}".format(
             module.params["password_lockout_time_mins"]
         ),
     ]
     if module.params.get("comment"):
-        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+        props.append(
+            "COMMENT = '{0}'".format(
+                escape_sql_string(
+                    module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)

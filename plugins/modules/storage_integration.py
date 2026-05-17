@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -73,19 +81,16 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         storage_provider=dict(type="str", choices=["S3", "GCS", "AZURE"]),
         storage_allowed_locations=dict(type="list", elements="str"),
         storage_blocked_locations=dict(type="list", elements="str"),
@@ -119,7 +124,8 @@ def run_module():
         parts.append("TYPE = EXTERNAL_STAGE")
         if module.params.get("storage_provider"):
             parts.append(
-                "STORAGE_PROVIDER = '{0}'".format(escape_sql_string(module.params["storage_provider"]))
+                "STORAGE_PROVIDER = '{0}'".format(
+                    escape_sql_string(module.params["storage_provider"]))
             )
         if module.params.get("storage_allowed_locations"):
             locs = ", ".join(
@@ -141,11 +147,16 @@ def run_module():
             )
         if module.params.get("azure_tenant_id"):
             parts.append(
-                "AZURE_TENANT_ID = '{0}'".format(escape_sql_string(module.params["azure_tenant_id"]))
+                "AZURE_TENANT_ID = '{0}'".format(
+                    escape_sql_string(module.params["azure_tenant_id"]))
             )
-        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
+        parts.append("ENABLED = {0}".format(
+            str(module.params["enabled"]).upper()))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+            parts.append(
+                "COMMENT = '{0}'".format(
+                    escape_sql_string(
+                        module.params["comment"])))
         sql = " ".join(parts)
 
     try:

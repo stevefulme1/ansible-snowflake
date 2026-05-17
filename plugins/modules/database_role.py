@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -52,21 +60,18 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(snowflake_argument_spec)
     argument_spec.update(
         name=dict(type="str", required=True),
         database=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         comment=dict(type="str"),
     )
 
@@ -81,7 +86,8 @@ def run_module():
     db = module.params["database"].upper()
     state = module.params["state"]
     fqn = "{0}.{1}".format(
-        SnowflakeClient.quote_identifier(db), SnowflakeClient.quote_identifier(name)
+        SnowflakeClient.quote_identifier(
+            db), SnowflakeClient.quote_identifier(name)
     )
 
     if state == "absent":
@@ -89,7 +95,10 @@ def run_module():
     else:
         parts = ["CREATE DATABASE ROLE IF NOT EXISTS {0}".format(fqn)]
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+            parts.append(
+                "COMMENT = '{0}'".format(
+                    escape_sql_string(
+                        module.params["comment"])))
         sql = " ".join(parts)
 
     try:

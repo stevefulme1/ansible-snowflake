@@ -1,9 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -55,13 +62,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -69,7 +69,12 @@ def run_module():
         share_name=dict(type="str"),
         title=dict(type="str"),
         description=dict(type="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -88,7 +93,9 @@ def run_module():
     else:
         parts = ["CREATE OR REPLACE LISTING {0}".format(name)]
         if module.params.get("share_name"):
-            parts.append("FOR SHARE {0}".format(module.params["share_name"].upper()))
+            parts.append(
+                "FOR SHARE {0}".format(
+                    module.params["share_name"].upper()))
         sql = " ".join(parts)
 
     try:

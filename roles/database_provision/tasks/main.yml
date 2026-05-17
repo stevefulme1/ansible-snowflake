@@ -46,7 +46,6 @@
         account: "{{ sf_account }}"
         user: "{{ sf_user }}"
         password: "{{ sf_password }}"
-        role: "SECURITYADMIN"
         state: present
       loop: "{{ db_grants }}"
       loop_control:
@@ -62,7 +61,6 @@
         account: "{{ sf_account }}"
         user: "{{ sf_user }}"
         password: "{{ sf_password }}"
-        role: "SECURITYADMIN"
         state: present
       loop: "{{ db_future_grants }}"
       loop_control:

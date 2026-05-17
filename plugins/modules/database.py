@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -59,24 +67,23 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def db_exists(client, name):
-    rows = client.query("SHOW DATABASES LIKE '{0}'".format(escape_sql_string(name)))
+    rows = client.query(
+        "SHOW DATABASES LIKE '{0}'".format(
+            escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         transient=dict(type="bool", default=False),
         data_retention_time_in_days=dict(type="int"),
         comment=dict(type="str"),
@@ -117,21 +124,26 @@ def run_module():
                         kind, client.quote_identifier(name)
                     )
                 ]
-                if module.params.get("data_retention_time_in_days") is not None:
+                if module.params.get(
+                        "data_retention_time_in_days") is not None:
                     parts.append(
                         "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
                             module.params["data_retention_time_in_days"]
                         )
                     )
                 if module.params.get("comment"):
-                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+                    parts.append(
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(
+                                module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)
             else:
                 alterations = []
-                if module.params.get("data_retention_time_in_days") is not None:
+                if module.params.get(
+                        "data_retention_time_in_days") is not None:
                     alterations.append(
                         "DATA_RETENTION_TIME_IN_DAYS = {0}".format(
                             module.params["data_retention_time_in_days"]
@@ -139,7 +151,8 @@ def run_module():
                     )
                 if module.params.get("comment"):
                     alterations.append(
-                        "COMMENT = '{0}'".format(escape_sql_string(module.params["comment"]))
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(module.params["comment"]))
                     )
                 if alterations:
                     sql = "ALTER DATABASE {0} SET {1}".format(

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """Unit tests for the user module."""
 
@@ -184,7 +185,8 @@ class TestUserDelete:
 
     @patch(CLIENT_PATH + ".SnowflakeClient")
     @patch(MODULE_PATH + ".AnsibleModule")
-    def test_drop_absent_user_no_change(self, mock_module_cls, mock_client_cls):
+    def test_drop_absent_user_no_change(
+            self, mock_module_cls, mock_client_cls):
         mock_mod = MagicMock()
         mock_mod.check_mode = False
         mock_mod.params = {
@@ -214,7 +216,8 @@ class TestUserIdempotency:
 
     @patch(CLIENT_PATH + ".SnowflakeClient")
     @patch(MODULE_PATH + ".AnsibleModule")
-    def test_absent_user_already_absent(self, mock_module_cls, mock_client_cls):
+    def test_absent_user_already_absent(
+            self, mock_module_cls, mock_client_cls):
         mock_mod = MagicMock()
         mock_mod.check_mode = False
         mock_mod.params = {

@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -89,24 +97,23 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def warehouse_exists(client, name):
-    rows = client.query("SHOW WAREHOUSES LIKE '{0}'".format(escape_sql_string(name)))
+    rows = client.query(
+        "SHOW WAREHOUSES LIKE '{0}'".format(
+            escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         size=dict(
             type="str",
             default="XSMALL",
@@ -165,24 +172,35 @@ def run_module():
                         client.quote_identifier(name)
                     )
                 ]
-                parts.append("WAREHOUSE_SIZE = '{0}'".format(escape_sql_string(module.params["size"])))
-                parts.append("AUTO_SUSPEND = {0}".format(module.params["auto_suspend"]))
+                parts.append(
+                    "WAREHOUSE_SIZE = '{0}'".format(
+                        escape_sql_string(
+                            module.params["size"])))
+                parts.append(
+                    "AUTO_SUSPEND = {0}".format(
+                        module.params["auto_suspend"]))
                 parts.append(
                     "AUTO_RESUME = {0}".format(
                         str(module.params["auto_resume"]).upper()
                     )
                 )
                 parts.append(
-                    "MIN_CLUSTER_COUNT = {0}".format(module.params["min_cluster_count"])
+                    "MIN_CLUSTER_COUNT = {0}".format(
+                        module.params["min_cluster_count"])
                 )
                 parts.append(
-                    "MAX_CLUSTER_COUNT = {0}".format(module.params["max_cluster_count"])
+                    "MAX_CLUSTER_COUNT = {0}".format(
+                        module.params["max_cluster_count"])
                 )
                 parts.append(
-                    "SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"]))
+                    "SCALING_POLICY = '{0}'".format(
+                        escape_sql_string(module.params["scaling_policy"]))
                 )
                 if module.params.get("comment"):
-                    parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+                    parts.append(
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(
+                                module.params["comment"])))
                 sql = " ".join(parts)
                 changed = True
                 if not module.check_mode:
@@ -191,7 +209,8 @@ def run_module():
                 # ALTER existing warehouse
                 alterations = []
                 alterations.append(
-                    "WAREHOUSE_SIZE = '{0}'".format(escape_sql_string(module.params["size"]))
+                    "WAREHOUSE_SIZE = '{0}'".format(
+                        escape_sql_string(module.params["size"]))
                 )
                 alterations.append(
                     "AUTO_SUSPEND = {0}".format(module.params["auto_suspend"])
@@ -202,17 +221,21 @@ def run_module():
                     )
                 )
                 alterations.append(
-                    "MIN_CLUSTER_COUNT = {0}".format(module.params["min_cluster_count"])
+                    "MIN_CLUSTER_COUNT = {0}".format(
+                        module.params["min_cluster_count"])
                 )
                 alterations.append(
-                    "MAX_CLUSTER_COUNT = {0}".format(module.params["max_cluster_count"])
+                    "MAX_CLUSTER_COUNT = {0}".format(
+                        module.params["max_cluster_count"])
                 )
                 alterations.append(
-                    "SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"]))
+                    "SCALING_POLICY = '{0}'".format(
+                        escape_sql_string(module.params["scaling_policy"]))
                 )
                 if module.params.get("comment"):
                     alterations.append(
-                        "COMMENT = '{0}'".format(escape_sql_string(module.params["comment"]))
+                        "COMMENT = '{0}'".format(
+                            escape_sql_string(module.params["comment"]))
                     )
                 sql = "ALTER WAREHOUSE {0} SET {1}".format(
                     client.quote_identifier(name), " ".join(alterations)

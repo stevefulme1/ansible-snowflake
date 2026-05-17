@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -88,24 +96,23 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def user_exists(client, name):
-    rows = client.query("SHOW USERS LIKE '{0}'".format(escape_sql_string(name)))
+    rows = client.query(
+        "SHOW USERS LIKE '{0}'".format(
+            escape_sql_string(name)))
     return len(rows) > 0
 
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         login_name=dict(type="str"),
         display_name=dict(type="str"),
         email=dict(type="str"),
@@ -145,17 +152,27 @@ def run_module():
         ("default_namespace", "DEFAULT_NAMESPACE"),
     ]:
         if module.params.get(param):
-            props.append("{0} = '{1}'".format(escape_sql_string(sf_prop, module.params[param])))
+            props.append(
+                "{0} = '{1}'".format(
+                    sf_prop, escape_sql_string(
+                        module.params[param])))
     if module.params.get("user_password"):
-        props.append("PASSWORD = '{0}'".format(escape_sql_string(module.params["user_password"])))
+        props.append(
+            "PASSWORD = '{0}'".format(
+                escape_sql_string(
+                    module.params["user_password"])))
     props.append(
         "MUST_CHANGE_PASSWORD = {0}".format(
             str(module.params["must_change_password"]).upper()
         )
     )
-    props.append("DISABLED = {0}".format(str(module.params["disabled"]).upper()))
+    props.append("DISABLED = {0}".format(
+        str(module.params["disabled"]).upper()))
     if module.params.get("comment"):
-        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+        props.append(
+            "COMMENT = '{0}'".format(
+                escape_sql_string(
+                    module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)
@@ -163,7 +180,8 @@ def run_module():
 
         if state == "absent":
             if exists:
-                sql = "DROP USER IF EXISTS {0}".format(client.quote_identifier(name))
+                sql = "DROP USER IF EXISTS {0}".format(
+                    client.quote_identifier(name))
                 changed = True
                 if not module.check_mode:
                     client.execute_ddl(sql)

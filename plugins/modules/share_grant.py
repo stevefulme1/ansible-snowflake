@@ -1,9 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -59,13 +66,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -73,7 +73,12 @@ def run_module():
         privilege=dict(type="str", required=True),
         on_type=dict(type="str", required=True),
         on_name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -91,7 +96,8 @@ def run_module():
     state = module.params["state"]
 
     if state == "present":
-        sql = "GRANT {0} ON {1} {2} TO SHARE {3}".format(priv, on_type, on_name, share)
+        sql = "GRANT {0} ON {1} {2} TO SHARE {3}".format(
+            priv, on_type, on_name, share)
     else:
         sql = "REVOKE {0} ON {1} {2} FROM SHARE {3}".format(
             priv, on_type, on_name, share

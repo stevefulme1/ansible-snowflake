@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -52,14 +60,6 @@ databases:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(name=dict(type="str"))
@@ -79,7 +79,9 @@ def run_module():
         client = SnowflakeClient(module)
         sql = "SHOW DATABASES"
         if module.params.get("name"):
-            sql += " LIKE '{0}'".format(escape_sql_string(module.params["name"]))
+            sql += " LIKE '{0}'".format(
+                escape_sql_string(
+                    module.params["name"]))
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))

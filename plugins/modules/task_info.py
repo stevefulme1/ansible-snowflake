@@ -1,9 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -60,14 +68,6 @@ tasks:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -90,15 +90,19 @@ def run_module():
     try:
         client = SnowflakeClient(module)
         sql = "SHOW TASKS"
-        if module.params.get("database_name") and module.params.get("schema_name"):
+        if module.params.get(
+                "database_name") and module.params.get("schema_name"):
             sql += " IN SCHEMA {0}.{1}".format(
                 module.params["database_name"].upper(),
                 module.params["schema_name"].upper(),
             )
         elif module.params.get("database_name"):
-            sql += " IN DATABASE {0}".format(module.params["database_name"].upper())
+            sql += " IN DATABASE {0}".format(
+                module.params["database_name"].upper())
         if module.params.get("name"):
-            sql += " LIKE '{0}'".format(escape_sql_string(module.params["name"]))
+            sql += " LIKE '{0}'".format(
+                escape_sql_string(
+                    module.params["name"]))
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))

@@ -1,9 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -73,14 +81,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -92,7 +92,12 @@ def run_module():
         condition=dict(type="str"),
         action=dict(type="str"),
         comment=dict(type="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -116,14 +121,23 @@ def run_module():
         cond = module.params.get("condition")
         act = module.params.get("action")
         if not cond or not act:
-            module.fail_json(msg="condition and action required when state=present")
+            module.fail_json(
+                msg="condition and action required when state=present")
         parts = ["CREATE OR REPLACE ALERT {0}".format(fqn)]
         if module.params.get("warehouse_name"):
-            parts.append("WAREHOUSE = {0}".format(module.params["warehouse_name"]))
+            parts.append(
+                "WAREHOUSE = {0}".format(
+                    module.params["warehouse_name"]))
         if module.params.get("schedule"):
-            parts.append("SCHEDULE = '{0}'".format(escape_sql_string(module.params["schedule"])))
+            parts.append(
+                "SCHEDULE = '{0}'".format(
+                    escape_sql_string(
+                        module.params["schedule"])))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
+            parts.append(
+                "COMMENT = '{0}'".format(
+                    escape_sql_string(
+                        module.params["comment"])))
         parts.append("IF (EXISTS ({0}))".format(cond))
         parts.append("THEN {0}".format(act))
         sql = " ".join(parts)

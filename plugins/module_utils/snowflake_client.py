@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """Snowflake SQL REST API client for Ansible modules."""
 
@@ -65,7 +66,8 @@ class SnowflakeClient(object):
         self.schema = module.params.get("schema")
         self.validate_certs = module.params.get("validate_certs", True)
 
-        self.base_url = "https://{0}.snowflakecomputing.com".format(self.account)
+        self.base_url = "https://{0}.snowflakecomputing.com".format(
+            self.account)
         self.api_url = "{0}/api/v2/statements".format(self.base_url)
 
         if not self.private_key and not self.password:
@@ -170,7 +172,8 @@ class SnowflakeClient(object):
             return result["data"]["token"]
         except (HTTPError, URLError, ValueError, KeyError) as exc:
             self.module.fail_json(
-                msg="Snowflake password authentication failed: {0}".format(str(exc))
+                msg="Snowflake password authentication failed: {0}".format(
+                    str(exc))
             )
 
     # ------------------------------------------------------------------
@@ -257,7 +260,8 @@ class SnowflakeClient(object):
             # Async query -- poll until complete
             handle = result.get("statementHandle")
             if not handle:
-                raise SnowflakeError("Received 202 but no statementHandle in response.")
+                raise SnowflakeError(
+                    "Received 202 but no statementHandle in response.")
             return self.get_results(handle)
 
         if result.get("code") and int(result["code"]) >= 390000:

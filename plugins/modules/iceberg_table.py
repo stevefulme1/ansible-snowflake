@@ -1,9 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2026, Steve Fulmer
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 DOCUMENTATION = r"""
@@ -66,14 +74,6 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
@@ -83,7 +83,12 @@ def run_module():
         catalog=dict(type="str", default="SNOWFLAKE"),
         external_volume=dict(type="str"),
         base_location=dict(type="str"),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
     )
     argument_spec.update(snowflake_argument_spec)
 
@@ -106,14 +111,20 @@ def run_module():
     else:
         parts = [
             "CREATE ICEBERG TABLE IF NOT EXISTS {0}".format(fqn),
-            "CATALOG = '{0}'".format(escape_sql_string(module.params["catalog"].upper())),
+            "CATALOG = '{0}'".format(
+                escape_sql_string(
+                    module.params["catalog"].upper())),
         ]
         if module.params.get("external_volume"):
             parts.append(
-                "EXTERNAL_VOLUME = '{0}'".format(escape_sql_string(module.params["external_volume"]))
+                "EXTERNAL_VOLUME = '{0}'".format(
+                    escape_sql_string(module.params["external_volume"]))
             )
         if module.params.get("base_location"):
-            parts.append("BASE_LOCATION = '{0}'".format(escape_sql_string(module.params["base_location"])))
+            parts.append(
+                "BASE_LOCATION = '{0}'".format(
+                    escape_sql_string(
+                        module.params["base_location"])))
         sql = " ".join(parts)
 
     try:

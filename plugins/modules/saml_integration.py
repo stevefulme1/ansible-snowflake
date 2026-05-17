@@ -1,8 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+    SnowflakeClient,
+    SnowflakeError,
+    snowflake_argument_spec,
+    escape_sql_string,
+)
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -66,19 +74,16 @@ sql:
   returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
-    SnowflakeClient,
-    SnowflakeError,
-    snowflake_argument_spec,
-    escape_sql_string,
-)
-
 
 def run_module():
     argument_spec = dict(
         name=dict(type="str", required=True),
-        state=dict(type="str", default="present", choices=["present", "absent"]),
+        state=dict(
+            type="str",
+            default="present",
+            choices=[
+                "present",
+                "absent"]),
         saml2_issuer=dict(type="str"),
         saml2_sso_url=dict(type="str"),
         saml2_provider=dict(
@@ -110,15 +115,26 @@ def run_module():
             )
         ]
         parts.append("TYPE = SAML2")
-        parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
+        parts.append("ENABLED = {0}".format(
+            str(module.params["enabled"]).upper()))
         if module.params.get("saml2_issuer"):
-            parts.append("SAML2_ISSUER = '{0}'".format(escape_sql_string(module.params["saml2_issuer"])))
+            parts.append(
+                "SAML2_ISSUER = '{0}'".format(
+                    escape_sql_string(
+                        module.params["saml2_issuer"])))
         if module.params.get("saml2_sso_url"):
-            parts.append("SAML2_SSO_URL = '{0}'".format(escape_sql_string(module.params["saml2_sso_url"])))
-        parts.append("SAML2_PROVIDER = '{0}'".format(escape_sql_string(module.params["saml2_provider"])))
+            parts.append(
+                "SAML2_SSO_URL = '{0}'".format(
+                    escape_sql_string(
+                        module.params["saml2_sso_url"])))
+        parts.append(
+            "SAML2_PROVIDER = '{0}'".format(
+                escape_sql_string(
+                    module.params["saml2_provider"])))
         if module.params.get("saml2_x509_cert"):
             parts.append(
-                "SAML2_X509_CERT = '{0}'".format(escape_sql_string(module.params["saml2_x509_cert"]))
+                "SAML2_X509_CERT = '{0}'".format(
+                    escape_sql_string(module.params["saml2_x509_cert"]))
             )
         sql = " ".join(parts)
 
