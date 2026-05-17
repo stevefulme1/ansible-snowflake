@@ -1,6 +1,7 @@
 ---
 exclude_paths:
   - roles/
+  - tests/integration/
 warn_list:
   - var-naming[no-role-prefix]
   - parser-error
