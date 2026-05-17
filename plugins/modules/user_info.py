@@ -18,6 +18,21 @@ options:
   name:
     description: Specific user to describe. If omitted, lists all users.
     type: str
+  limit:
+    description:
+      - Maximum number of rows to return (maps to SQL LIMIT clause).
+    type: int
+    default: 100
+  offset:
+    description:
+      - Number of rows to skip (maps to SQL OFFSET clause).
+    type: int
+    default: 0
+  max_results:
+    description:
+      - Maximum total results to return.
+    type: int
+    default: 1000
 extends_documentation_fragment:
   - stevefulme1.snowflake.snowflake
 """
@@ -55,6 +70,9 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
 def run_module():
     argument_spec = dict(name=dict(type="str"))
     argument_spec.update(snowflake_argument_spec)
+    argument_spec["limit"] = dict(type="int", default=100)
+    argument_spec["offset"] = dict(type="int", default=0)
+    argument_spec["max_results"] = dict(type="int", default=1000)
 
     module = AnsibleModule(
         argument_spec=argument_spec,
@@ -76,6 +94,11 @@ def run_module():
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
 
+    # Apply pagination
+    _limit = module.params.get("limit") or 100
+    _offset = module.params.get("offset") or 0
+    if isinstance(rows, list):
+        rows = rows[_offset:_offset + _limit]
     module.exit_json(changed=False, users=rows)
 
 
