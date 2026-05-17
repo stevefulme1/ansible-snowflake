@@ -1,0 +1,61 @@
+---
+# Required
+# pipeline_database: ""
+# pipeline_schema: ""
+
+# Snowflake connection
+sf_account: "{{ lookup('env', 'SNOWFLAKE_ACCOUNT') }}"
+sf_user: "{{ lookup('env', 'SNOWFLAKE_USER') }}"
+sf_password: "{{ lookup('env', 'SNOWFLAKE_PASSWORD') }}"
+sf_role: "SYSADMIN"
+sf_warehouse: "COMPUTE_WH"
+
+# Stages
+pipeline_stages: []
+#   - name: "RAW_STAGE"
+#     type: "external"  # internal or external
+#     url: "s3://my-bucket/data/"
+#     storage_integration: "MY_S3_INTEGRATION"
+#     file_format: "JSON_FORMAT"
+#     comment: "Raw data landing stage"
+
+# File formats
+pipeline_file_formats: []
+#   - name: "JSON_FORMAT"
+#     type: "JSON"
+#     strip_outer_array: true
+#     compression: "AUTO"
+#   - name: "CSV_FORMAT"
+#     type: "CSV"
+#     field_delimiter: ","
+#     skip_header: 1
+#     compression: "AUTO"
+
+# Pipes (Snowpipe for continuous ingestion)
+pipeline_pipes: []
+#   - name: "RAW_PIPE"
+#     auto_ingest: true
+#     copy_statement: |
+#       COPY INTO RAW.EVENTS
+#       FROM @RAW_STAGE
+#       FILE_FORMAT = (FORMAT_NAME = 'JSON_FORMAT')
+
+# Streams (change tracking)
+pipeline_streams: []
+#   - name: "EVENTS_STREAM"
+#     source_table: "RAW.EVENTS"
+#     append_only: false
+#     comment: "Track changes on raw events"
+
+# Tasks (scheduled SQL)
+pipeline_tasks: []
+#   - name: "TRANSFORM_EVENTS"
+#     warehouse: "COMPUTE_WH"
+#     schedule: "5 MINUTE"
+#     sql: |
+#       INSERT INTO STAGING.EVENTS_CLEAN
+#       SELECT * FROM TABLE(STREAM_STATUS('EVENTS_STREAM'))
+#     predecessors: []
+#     enabled: true
+
+pipeline_state: present

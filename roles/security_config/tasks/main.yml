@@ -1,0 +1,104 @@
+---
+- name: Configure Snowflake security
+  block:
+    - name: Create network policies
+      snowflake.snowflake.network_policy:
+        name: "{{ item.name }}"
+        allowed_ip_list: "{{ item.allowed_ip_list }}"
+        blocked_ip_list: "{{ item.blocked_ip_list | default([]) }}"
+        comment: "{{ item.comment | default('') }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: present
+      loop: "{{ sec_network_policies }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: sec_network_policies | length > 0
+
+    - name: Set account-level network policy
+      snowflake.snowflake.account_parameter:
+        name: "NETWORK_POLICY"
+        value: "{{ sec_account_network_policy }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "ACCOUNTADMIN"
+      when: sec_account_network_policy | length > 0
+
+    - name: Create security roles
+      snowflake.snowflake.role:
+        name: "{{ item.name }}"
+        comment: "{{ item.comment | default('') }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: present
+      loop: "{{ sec_roles }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: sec_roles | length > 0
+
+    - name: Grant roles to parent roles
+      snowflake.snowflake.role_grant:
+        role: "{{ item.0.name }}"
+        granted_to_role: "{{ item.1 }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: present
+      loop: "{{ sec_roles | subelements('granted_to_roles', skip_missing=True) }}"
+      loop_control:
+        label: "{{ item.0.name }} -> {{ item.1 }}"
+      when: sec_roles | length > 0
+
+    - name: Create users
+      snowflake.snowflake.user:
+        name: "{{ item.name }}"
+        login_name: "{{ item.login_name | default(item.name) }}"
+        default_role: "{{ item.default_role | default('PUBLIC') }}"
+        default_warehouse: "{{ item.default_warehouse | default(omit) }}"
+        must_change_password: "{{ item.must_change_password | default(true) }}"
+        disabled: "{{ item.disabled | default(false) }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: present
+      loop: "{{ sec_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: sec_users | length > 0
+      no_log: true
+
+    - name: Configure password policy
+      snowflake.snowflake.password_policy:
+        name: "ANSIBLE_PASSWORD_POLICY"
+        database: "SNOWFLAKE"
+        schema: "ACCOUNT_USAGE"
+        password_min_length: "{{ sec_password_min_length }}"
+        password_max_length: "{{ sec_password_max_length }}"
+        password_min_upper_case_chars: "{{ sec_password_min_upper }}"
+        password_min_lower_case_chars: "{{ sec_password_min_lower }}"
+        password_min_numeric_chars: "{{ sec_password_min_numeric }}"
+        password_min_special_chars: "{{ sec_password_min_special }}"
+        password_max_age_days: "{{ sec_password_max_age_days }}"
+        password_max_retries: "{{ sec_password_max_retries }}"
+        password_lockout_time_mins: "{{ sec_password_lockout_time_mins }}"
+        password_history: "{{ sec_password_history }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "ACCOUNTADMIN"
+        state: present
+      when: sec_password_policy_enabled
+
+  rescue:
+    - name: Report security configuration failure
+      ansible.builtin.fail:
+        msg: >-
+          Security configuration failed.
+          Error: {{ ansible_failed_result.msg | default('Unknown error') }}

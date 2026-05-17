@@ -1,0 +1,77 @@
+---
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - db_name is defined and db_name | length > 0
+    fail_msg: "Required variable: db_name"
+
+- name: Provision Snowflake database
+  block:
+    - name: Create database
+      snowflake.snowflake.database:
+        name: "{{ db_name }}"
+        comment: "{{ db_comment }}"
+        data_retention_time_in_days: "{{ db_data_retention_days }}"
+        transient: "{{ db_transient }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: "{{ db_state }}"
+      register: _database
+
+    - name: Create schemas
+      snowflake.snowflake.schema:
+        name: "{{ item.name }}"
+        database: "{{ db_name }}"
+        comment: "{{ item.comment | default('') }}"
+        data_retention_time_in_days: "{{ item.retention_days | default(db_data_retention_days) }}"
+        transient: "{{ item.transient | default(db_transient) }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: present
+      loop: "{{ db_schemas }}"
+      loop_control:
+        label: "{{ db_name }}.{{ item.name }}"
+
+    - name: Apply grants
+      snowflake.snowflake.grant_privileges:
+        role: "{{ item.role }}"
+        privileges: "{{ item.privileges }}"
+        on_type: "{{ item.on_type }}"
+        on_name: "{{ item.on_name | default(db_name) }}"
+        database: "{{ db_name }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "SECURITYADMIN"
+        state: present
+      loop: "{{ db_grants }}"
+      loop_control:
+        label: "{{ item.role }} -> {{ item.on_type }}"
+      when: db_grants | length > 0
+
+    - name: Apply future grants
+      snowflake.snowflake.grant_privileges:
+        role: "{{ item.role }}"
+        privileges: "{{ item.privileges }}"
+        on_type: "FUTURE {{ item.on_type }}"
+        in_schema: "{{ db_name }}.{{ item.in_schema }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "SECURITYADMIN"
+        state: present
+      loop: "{{ db_future_grants }}"
+      loop_control:
+        label: "{{ item.role }} -> FUTURE {{ item.on_type }} in {{ item.in_schema }}"
+      when: db_future_grants | length > 0
+
+  rescue:
+    - name: Report database provisioning failure
+      ansible.builtin.fail:
+        msg: >-
+          Database provisioning failed for '{{ db_name }}'.
+          Error: {{ ansible_failed_result.msg | default('Unknown error') }}

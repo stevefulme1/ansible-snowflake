@@ -1,0 +1,46 @@
+---
+# Required
+# db_name: ""
+
+# Snowflake connection
+sf_account: "{{ lookup('env', 'SNOWFLAKE_ACCOUNT') }}"
+sf_user: "{{ lookup('env', 'SNOWFLAKE_USER') }}"
+sf_password: "{{ lookup('env', 'SNOWFLAKE_PASSWORD') }}"
+sf_role: "SYSADMIN"
+
+# Database settings
+db_comment: "Managed by Ansible"
+db_data_retention_days: 1
+db_state: present
+db_transient: false
+
+# Schemas
+db_schemas:
+  - name: "RAW"
+    comment: "Raw ingested data"
+  - name: "STAGING"
+    comment: "Staging transformations"
+  - name: "ANALYTICS"
+    comment: "Analytics-ready models"
+
+# Grants
+db_grants: []
+#   - role: "ANALYST_ROLE"
+#     privileges:
+#       - USAGE
+#       - MONITOR
+#     on_type: "DATABASE"
+#     on_name: ""  # defaults to db_name
+#   - role: "ETL_ROLE"
+#     privileges:
+#       - ALL PRIVILEGES
+#     on_type: "SCHEMA"
+#     on_name: "RAW"
+
+# Future grants
+db_future_grants: []
+#   - role: "ANALYST_ROLE"
+#     privileges:
+#       - SELECT
+#     on_type: "TABLES"
+#     in_schema: "ANALYTICS"

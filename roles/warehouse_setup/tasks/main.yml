@@ -1,0 +1,69 @@
+---
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - wh_name is defined and wh_name | length > 0
+      - wh_size in ['XSMALL', 'SMALL', 'MEDIUM', 'LARGE', 'XLARGE', '2XLARGE', '3XLARGE', '4XLARGE']
+    fail_msg: "Required: wh_name and valid wh_size"
+
+- name: Configure Snowflake warehouse
+  block:
+    - name: Create or update warehouse
+      snowflake.snowflake.warehouse:
+        name: "{{ wh_name }}"
+        warehouse_size: "{{ wh_size }}"
+        warehouse_type: "{{ wh_type }}"
+        auto_suspend: "{{ wh_auto_suspend }}"
+        auto_resume: "{{ wh_auto_resume }}"
+        min_cluster_count: "{{ wh_min_cluster_count }}"
+        max_cluster_count: "{{ wh_max_cluster_count }}"
+        scaling_policy: "{{ wh_scaling_policy }}"
+        initially_suspended: "{{ wh_initially_suspended }}"
+        comment: "{{ wh_comment }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+        state: "{{ wh_state }}"
+      register: _warehouse
+
+    - name: Create resource monitor
+      snowflake.snowflake.resource_monitor:
+        name: "{{ wh_resource_monitor_name | default(wh_name + '_MONITOR') }}"
+        credit_quota: "{{ wh_credit_quota }}"
+        notify_triggers:
+          - "{{ wh_monitor_notify_percent }}"
+        suspend_triggers:
+          - "{{ wh_monitor_suspend_percent }}"
+        suspend_immediate_triggers:
+          - "{{ wh_monitor_suspend_immediately_percent }}"
+        warehouses:
+          - "{{ wh_name }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "ACCOUNTADMIN"
+        state: present
+      when: wh_resource_monitor_enabled
+
+    - name: Apply tags to warehouse
+      snowflake.snowflake.tag_association:
+        object_name: "{{ wh_name }}"
+        object_type: "WAREHOUSE"
+        tag_name: "{{ item.key }}"
+        tag_value: "{{ item.value }}"
+        account: "{{ sf_account }}"
+        user: "{{ sf_user }}"
+        password: "{{ sf_password }}"
+        role: "{{ sf_role }}"
+      loop: "{{ wh_tags | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}={{ item.value }}"
+      when: wh_tags | length > 0
+
+  rescue:
+    - name: Report warehouse setup failure
+      ansible.builtin.fail:
+        msg: >-
+          Warehouse setup failed for '{{ wh_name }}'.
+          Error: {{ ansible_failed_result.msg | default('Unknown error') }}
