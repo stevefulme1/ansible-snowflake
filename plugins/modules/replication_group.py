@@ -67,6 +67,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -116,7 +117,7 @@ def run_module():
         if module.params.get("replication_schedule"):
             parts.append(
                 "REPLICATION_SCHEDULE = '{0}'".format(
-                    module.params["replication_schedule"]
+                    escape_sql_string(module.params["replication_schedule"])
                 )
             )
         sql = " ".join(parts)

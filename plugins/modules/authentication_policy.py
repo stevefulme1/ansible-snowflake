@@ -70,6 +70,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -100,24 +101,24 @@ def run_module():
     props = []
     if module.params.get("authentication_methods"):
         vals = ",".join(
-            "'{0}'".format(m) for m in module.params["authentication_methods"]
+            "'{0}'".format(escape_sql_string(m)) for m in module.params["authentication_methods"]
         )
         props.append("AUTHENTICATION_METHODS = ({0})".format(vals))
     if module.params.get("mfa_authentication_methods"):
         vals = ",".join(
-            "'{0}'".format(m) for m in module.params["mfa_authentication_methods"]
+            "'{0}'".format(escape_sql_string(m)) for m in module.params["mfa_authentication_methods"]
         )
         props.append("MFA_AUTHENTICATION_METHODS = ({0})".format(vals))
     if module.params.get("client_types"):
-        vals = ",".join("'{0}'".format(c) for c in module.params["client_types"])
+        vals = ",".join("'{0}'".format(escape_sql_string(c)) for c in module.params["client_types"])
         props.append("CLIENT_TYPES = ({0})".format(vals))
     if module.params.get("security_integrations"):
         vals = ",".join(
-            "'{0}'".format(s) for s in module.params["security_integrations"]
+            "'{0}'".format(escape_sql_string(s)) for s in module.params["security_integrations"]
         )
         props.append("SECURITY_INTEGRATIONS = ({0})".format(vals))
     if module.params.get("comment"):
-        props.append("COMMENT = '{0}'".format(module.params["comment"]))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)

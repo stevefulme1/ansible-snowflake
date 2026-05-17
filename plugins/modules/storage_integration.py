@@ -78,6 +78,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -118,33 +119,33 @@ def run_module():
         parts.append("TYPE = EXTERNAL_STAGE")
         if module.params.get("storage_provider"):
             parts.append(
-                "STORAGE_PROVIDER = '{0}'".format(module.params["storage_provider"])
+                "STORAGE_PROVIDER = '{0}'".format(escape_sql_string(module.params["storage_provider"]))
             )
         if module.params.get("storage_allowed_locations"):
             locs = ", ".join(
-                "'{0}'".format(loc)
+                "'{0}'".format(escape_sql_string(loc))
                 for loc in module.params["storage_allowed_locations"]
             )
             parts.append("STORAGE_ALLOWED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_blocked_locations"):
             locs = ", ".join(
-                "'{0}'".format(loc)
+                "'{0}'".format(escape_sql_string(loc))
                 for loc in module.params["storage_blocked_locations"]
             )
             parts.append("STORAGE_BLOCKED_LOCATIONS = ({0})".format(locs))
         if module.params.get("storage_aws_role_arn"):
             parts.append(
                 "STORAGE_AWS_ROLE_ARN = '{0}'".format(
-                    module.params["storage_aws_role_arn"]
+                    escape_sql_string(module.params["storage_aws_role_arn"])
                 )
             )
         if module.params.get("azure_tenant_id"):
             parts.append(
-                "AZURE_TENANT_ID = '{0}'".format(module.params["azure_tenant_id"])
+                "AZURE_TENANT_ID = '{0}'".format(escape_sql_string(module.params["azure_tenant_id"]))
             )
         parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
         if module.params.get("comment"):
-            parts.append("COMMENT = '{0}'".format(module.params["comment"]))
+            parts.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
         sql = " ".join(parts)
 
     try:

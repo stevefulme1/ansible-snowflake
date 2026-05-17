@@ -57,6 +57,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -89,7 +90,7 @@ def run_module():
         )
     if module.params.get("scaling_policy"):
         settings.append(
-            "SCALING_POLICY = '{0}'".format(module.params["scaling_policy"])
+            "SCALING_POLICY = '{0}'".format(escape_sql_string(module.params["scaling_policy"]))
         )
     if not settings:
         module.fail_json(msg="At least one cluster setting is required")

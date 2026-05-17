@@ -59,6 +59,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -81,7 +82,7 @@ def run_module():
     try:
         client = SnowflakeClient(module)
         sql = "SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => '{0}', RECURSIVE => TRUE))".format(
-            module.params["root_task"].upper()
+            escape_sql_string(module.params["root_task"].upper())
         )
         rows = client.query(sql)
     except SnowflakeError as e:

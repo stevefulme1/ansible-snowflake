@@ -65,6 +65,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -97,7 +98,7 @@ def run_module():
         elif module.params.get("database_name"):
             sql += " IN DATABASE {0}".format(module.params["database_name"].upper())
         if module.params.get("name"):
-            sql += " LIKE '{0}'".format(module.params["name"])
+            sql += " LIKE '{0}'".format(escape_sql_string(module.params["name"]))
         rows = client.query(sql)
     except SnowflakeError as e:
         module.fail_json(msg=str(e))

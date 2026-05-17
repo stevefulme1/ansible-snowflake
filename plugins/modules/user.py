@@ -93,11 +93,12 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
 def user_exists(client, name):
-    rows = client.query("SHOW USERS LIKE '{0}'".format(name))
+    rows = client.query("SHOW USERS LIKE '{0}'".format(escape_sql_string(name)))
     return len(rows) > 0
 
 
@@ -144,9 +145,9 @@ def run_module():
         ("default_namespace", "DEFAULT_NAMESPACE"),
     ]:
         if module.params.get(param):
-            props.append("{0} = '{1}'".format(sf_prop, module.params[param]))
+            props.append("{0} = '{1}'".format(escape_sql_string(sf_prop, module.params[param])))
     if module.params.get("user_password"):
-        props.append("PASSWORD = '{0}'".format(module.params["user_password"]))
+        props.append("PASSWORD = '{0}'".format(escape_sql_string(module.params["user_password"])))
     props.append(
         "MUST_CHANGE_PASSWORD = {0}".format(
             str(module.params["must_change_password"]).upper()
@@ -154,7 +155,7 @@ def run_module():
     )
     props.append("DISABLED = {0}".format(str(module.params["disabled"]).upper()))
     if module.params.get("comment"):
-        props.append("COMMENT = '{0}'".format(module.params["comment"]))
+        props.append("COMMENT = '{0}'".format(escape_sql_string(module.params["comment"])))
 
     try:
         client = SnowflakeClient(module)

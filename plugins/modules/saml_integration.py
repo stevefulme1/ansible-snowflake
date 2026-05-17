@@ -71,6 +71,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -111,13 +112,13 @@ def run_module():
         parts.append("TYPE = SAML2")
         parts.append("ENABLED = {0}".format(str(module.params["enabled"]).upper()))
         if module.params.get("saml2_issuer"):
-            parts.append("SAML2_ISSUER = '{0}'".format(module.params["saml2_issuer"]))
+            parts.append("SAML2_ISSUER = '{0}'".format(escape_sql_string(module.params["saml2_issuer"])))
         if module.params.get("saml2_sso_url"):
-            parts.append("SAML2_SSO_URL = '{0}'".format(module.params["saml2_sso_url"]))
-        parts.append("SAML2_PROVIDER = '{0}'".format(module.params["saml2_provider"]))
+            parts.append("SAML2_SSO_URL = '{0}'".format(escape_sql_string(module.params["saml2_sso_url"])))
+        parts.append("SAML2_PROVIDER = '{0}'".format(escape_sql_string(module.params["saml2_provider"])))
         if module.params.get("saml2_x509_cert"):
             parts.append(
-                "SAML2_X509_CERT = '{0}'".format(module.params["saml2_x509_cert"])
+                "SAML2_X509_CERT = '{0}'".format(escape_sql_string(module.params["saml2_x509_cert"]))
             )
         sql = " ".join(parts)
 

@@ -77,6 +77,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -120,14 +121,14 @@ def run_module():
             )
         ]
         parts.append("TYPE = OAUTH")
-        parts.append("OAUTH_CLIENT = '{0}'".format(module.params["oauth_client"]))
+        parts.append("OAUTH_CLIENT = '{0}'".format(escape_sql_string(module.params["oauth_client"])))
         if module.params["oauth_client"] == "CUSTOM":
             parts.append(
-                "OAUTH_CLIENT_TYPE = '{0}'".format(module.params["oauth_client_type"])
+                "OAUTH_CLIENT_TYPE = '{0}'".format(escape_sql_string(module.params["oauth_client_type"]))
             )
         if module.params.get("oauth_redirect_uri"):
             parts.append(
-                "OAUTH_REDIRECT_URI = '{0}'".format(module.params["oauth_redirect_uri"])
+                "OAUTH_REDIRECT_URI = '{0}'".format(escape_sql_string(module.params["oauth_redirect_uri"]))
             )
         parts.append(
             "OAUTH_ISSUE_REFRESH_TOKENS = {0}".format(

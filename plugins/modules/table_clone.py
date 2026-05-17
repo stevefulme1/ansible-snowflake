@@ -62,6 +62,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -90,7 +91,7 @@ def run_module():
     source = module.params["source_table"].upper()
     sql = "CREATE TABLE {0} CLONE {1}".format(fqn, source)
     if module.params.get("at_timestamp"):
-        sql += " AT (TIMESTAMP => '{0}')".format(module.params["at_timestamp"])
+        sql += " AT (TIMESTAMP => '{0}')".format(escape_sql_string(module.params["at_timestamp"]))
 
     try:
         client = SnowflakeClient(module)

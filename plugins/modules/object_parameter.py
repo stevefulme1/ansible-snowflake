@@ -58,6 +58,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -83,7 +84,7 @@ def run_module():
     value = module.params.get("parameter_value")
 
     if value is not None:
-        sql = "ALTER {0} {1} SET {2} = '{3}'".format(obj_type, obj_name, param, value)
+        sql = "ALTER {0} {1} SET {2} = '{3}'".format(obj_type, obj_name, param, escape_sql_string(value))
     else:
         sql = "ALTER {0} {1} UNSET {2}".format(obj_type, obj_name, param)
 

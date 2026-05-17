@@ -57,6 +57,7 @@ from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_cl
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
+    escape_sql_string,
 )
 
 
@@ -83,7 +84,7 @@ def run_module():
     )
     sql = "ALTER PIPE {0} REFRESH".format(fqn)
     if module.params.get("prefix"):
-        sql += " PREFIX = '{0}'".format(module.params["prefix"])
+        sql += " PREFIX = '{0}'".format(escape_sql_string(module.params["prefix"]))
 
     try:
         client = SnowflakeClient(module)
