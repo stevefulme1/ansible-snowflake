@@ -1,0 +1,4 @@
+---
+snowflake_account: "{{ lookup('env', 'SNOWFLAKE_ACCOUNT') }}"
+snowflake_user: "{{ lookup('env', 'SNOWFLAKE_USER') }}"
+snowflake_private_key: "{{ lookup('env', 'SNOWFLAKE_PRIVATE_KEY') }}"
