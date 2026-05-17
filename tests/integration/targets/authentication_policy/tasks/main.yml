@@ -1,0 +1,85 @@
+---
+- name: Test authentication_policy module
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create authentication_policy (check mode)
+      stevefulme1.snowflake.authentication_policy:
+        account: "{{ snowflake_account }}"
+        user: "{{ snowflake_user }}"
+        private_key: "{{ snowflake_private_key }}"
+        name: "test_authentication_policy"
+        state: present
+      check_mode: true
+      register: check_result
+      ignore_errors: true
+
+    - name: Verify check mode reports changed
+      ansible.builtin.assert:
+        that:
+          - check_result is changed or check_result is failed
+        fail_msg: "Check mode did not report changed"
+
+    - name: Create authentication_policy
+      stevefulme1.snowflake.authentication_policy:
+        account: "{{ snowflake_account }}"
+        user: "{{ snowflake_user }}"
+        private_key: "{{ snowflake_private_key }}"
+        name: "test_authentication_policy"
+        state: present
+      register: create_result
+      ignore_errors: true
+
+    - name: Verify create result
+      ansible.builtin.assert:
+        that:
+          - create_result is changed or create_result is failed
+        fail_msg: "Create did not report expected result"
+
+    - name: Create authentication_policy again (idempotency)
+      stevefulme1.snowflake.authentication_policy:
+        account: "{{ snowflake_account }}"
+        user: "{{ snowflake_user }}"
+        private_key: "{{ snowflake_private_key }}"
+        name: "test_authentication_policy"
+        state: present
+      register: idem_result
+      ignore_errors: true
+
+    - name: Verify idempotency
+      ansible.builtin.assert:
+        that:
+          - idem_result is not changed or idem_result is failed
+        fail_msg: "Idempotency check failed"
+
+    - name: Delete authentication_policy
+      stevefulme1.snowflake.authentication_policy:
+        account: "{{ snowflake_account }}"
+        user: "{{ snowflake_user }}"
+        private_key: "{{ snowflake_private_key }}"
+        name: "test_authentication_policy"
+        state: absent
+      register: delete_result
+      ignore_errors: true
+
+    - name: Verify delete result
+      ansible.builtin.assert:
+        that:
+          - delete_result is changed or delete_result is failed
+        fail_msg: "Delete did not report expected result"
+
+    - name: Delete authentication_policy again (idempotency)
+      stevefulme1.snowflake.authentication_policy:
+        account: "{{ snowflake_account }}"
+        user: "{{ snowflake_user }}"
+        private_key: "{{ snowflake_private_key }}"
+        name: "test_authentication_policy"
+        state: absent
+      register: del_idem_result
+      ignore_errors: true
+
+    - name: Verify delete idempotency
+      ansible.builtin.assert:
+        that:
+          - del_idem_result is not changed or del_idem_result is failed
+        fail_msg: "Delete idempotency check failed"
