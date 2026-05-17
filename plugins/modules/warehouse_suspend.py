@@ -4,12 +4,10 @@
 # https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
     SnowflakeClient,
     SnowflakeError,
     snowflake_argument_spec,
 )
-from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -40,6 +38,9 @@ EXAMPLES = r"""
 """
 
 RETURN = r"""
+
+from ansible_collections.stevefulme1.snowflake.plugins.module_utils.snowflake_client import (
+from ansible.module_utils.basic import AnsibleModule
 sql:
   description: The SQL statement executed.
   type: str
