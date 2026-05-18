@@ -1,4 +1,7 @@
 from __future__ import absolute_import, division, print_function
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 __metaclass__ = type
 
 """Dynamic inventory plugin."""
@@ -6,7 +9,6 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 ---
 name: snowflake_inventory
-plugin_type: inventory
 short_description: Dynamic inventory from Snowflake
 description:
     - Discovers hosts from Snowflake API.
