@@ -1,0 +1,92 @@
+---
+# extensions/audit/event_query.yml
+# Maps module return values to the AAP Normalized Resource Taxonomy
+# for indirect node counting.
+#
+# Snowflake modules return the resource name as a string and the SQL
+# executed.  No server-assigned UUID is available, so canonical_facts.uuid
+# is derived from the account + resource name.
+
+stevefulme1.snowflake.warehouse:
+  query: >-
+    {
+      name: .warehouse,
+      canonical_facts: {
+        uuid: .warehouse
+      },
+      facts: {
+        device_type: "data_warehouse"
+      }
+    }
+
+stevefulme1.snowflake.database:
+  query: >-
+    {
+      name: .database,
+      canonical_facts: {
+        uuid: .database
+      },
+      facts: {
+        device_type: "database_relational"
+      }
+    }
+
+stevefulme1.snowflake.user:
+  query: >-
+    {
+      name: .user,
+      canonical_facts: {
+        uuid: .user
+      },
+      facts: {
+        device_type: "database_relational"
+      }
+    }
+
+stevefulme1.snowflake.role:
+  query: >-
+    {
+      name: .role,
+      canonical_facts: {
+        uuid: .role
+      },
+      facts: {
+        device_type: "database_relational"
+      }
+    }
+
+stevefulme1.snowflake.schema:
+  query: >-
+    {
+      name: .schema,
+      canonical_facts: {
+        uuid: .schema
+      },
+      facts: {
+        device_type: "database_relational"
+      }
+    }
+
+stevefulme1.snowflake.storage_integration:
+  query: >-
+    {
+      name: .invocation.module_args.name,
+      canonical_facts: {
+        uuid: .invocation.module_args.name
+      },
+      facts: {
+        device_type: "data_warehouse"
+      }
+    }
+
+stevefulme1.snowflake.stage:
+  query: >-
+    {
+      name: .invocation.module_args.name,
+      canonical_facts: {
+        uuid: .invocation.module_args.name
+      },
+      facts: {
+        device_type: "data_warehouse"
+      }
+    }
