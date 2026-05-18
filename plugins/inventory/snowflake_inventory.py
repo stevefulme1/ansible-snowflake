@@ -33,6 +33,7 @@ from ansible.plugins.inventory import BaseInventoryPlugin
 
 try:
     import requests
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
