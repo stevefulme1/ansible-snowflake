@@ -178,7 +178,12 @@ def run_module():
     except SnowflakeError as e:
         module.fail_json(msg=str(e))
 
-    module.exit_json(changed=changed, user=name, sql=sql)
+    # Mask password in returned SQL to prevent credential leak
+    import re
+
+    safe_sql = re.sub(r"PASSWORD\s*=\s*'[^']*'", "PASSWORD = '***'", sql)
+
+    module.exit_json(changed=changed, user=name, sql=safe_sql)
 
 
 def main():

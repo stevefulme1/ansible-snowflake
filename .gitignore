@@ -7,3 +7,8 @@ build/
 .tox/
 .pytest_cache/
 .ansible/
+*.tar.gz
+*.DS_Store
+.env
+*.pem
+*.key

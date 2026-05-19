@@ -92,7 +92,7 @@ def run_module():
 
     view = module.params["view_name"].upper()
     cols = module.params["columns"]
-    sql = "SELECT {0} FROM SNOWFLAKE.ACCOUNT_USAGE.{1}".format(cols, view)
+    sql = "SELECT {0} FROM SNOWFLAKE.ACCOUNT_USAGE.{1}".format(cols, view)  # noqa: S608
     if module.params.get("where_clause"):
         sql += " WHERE {0}".format(module.params["where_clause"])
     sql += " LIMIT {0}".format(module.params["limit"])

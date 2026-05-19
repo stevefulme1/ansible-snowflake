@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.1] - 2026-05-18
+
+### Security
+- Mask password in SQL return value from user module to prevent credential leak
+- Validate function/procedure body does not contain `$$` delimiter to prevent SQL injection breakout in cortex_function, snowpark_function, and snowpark_procedure modules
+- Re-enable S608 (SQL injection) ruff lint rule in CI
+- Add .gitignore entries for build artifacts and sensitive files
+- Remove tracked .tar.gz build artifact from repository
+
 ## [2.0.0] - 2026-05-17
 
 ### Added

@@ -145,6 +145,8 @@ def run_module():
         if module.params.get("handler"):
             parts.append("HANDLER = '{0}'".format(escape_sql_string(module.params["handler"])))
         if module.params.get("body"):
+            if "$$" in module.params["body"]:
+                module.fail_json(msg="Procedure body must not contain '$$' delimiter to prevent SQL injection")
             parts.append("AS $$ {0} $$".format(module.params["body"]))
         sql = " ".join(parts)
 

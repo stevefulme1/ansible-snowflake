@@ -82,7 +82,7 @@ def run_module():
 
     try:
         client = SnowflakeClient(module)
-        sql = "SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => '{0}', RECURSIVE => TRUE))".format(
+        sql = "SELECT * FROM TABLE(INFORMATION_SCHEMA.TASK_DEPENDENTS(TASK_NAME => '{0}', RECURSIVE => TRUE))".format(  # noqa: S608
             escape_sql_string(module.params["root_task"].upper())
         )
         rows = client.query(sql)

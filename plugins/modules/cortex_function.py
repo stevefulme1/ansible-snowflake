@@ -140,6 +140,8 @@ def run_module():
         body = module.params.get("body")
         if not body:
             module.fail_json(msg="body is required when state=present")
+        if "$$" in body:
+            module.fail_json(msg="Function body must not contain '$$' delimiter to prevent SQL injection")
         args = module.params.get("arguments") or []
         arg_parts = []
         for a in args:
