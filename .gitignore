@@ -1,3 +1,20 @@
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.p12
+vault_pass*
+*vault*.yml
+credentials*
+
+# Ansible
+*.retry
+collections/
+.ansible/
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -6,9 +23,18 @@ dist/
 build/
 .tox/
 .pytest_cache/
-.ansible/
+.venv/
+venv/
+
+# Build artifacts
 *.tar.gz
-*.DS_Store
-.env
-*.pem
-*.key
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log

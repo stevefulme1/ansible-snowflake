@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Maintenance
+- Expanded .gitignore with additional patterns for certs, vault files, IDE, logs, and venvs
+
 ## [2.1.1] - 2026-05-18
 
 ### Security
