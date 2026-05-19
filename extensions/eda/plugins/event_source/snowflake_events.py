@@ -194,7 +194,7 @@ async def main(queue, args):
                     " WHERE IS_SUCCESS = 'NO'"
                     " AND EVENT_TIMESTAMP >= '{0}'::TIMESTAMP_LTZ"
                     " ORDER BY EVENT_TIMESTAMP DESC LIMIT 100"
-                ).format(last_poll)  # noqa: S608 - timestamp from datetime.now(), not user input
+                ).format(last_poll)
                 rows = _execute_query(account, token, sql, auth_type, role, warehouse)
                 for row in rows:
                     await queue.put({"type": "login_failure", "data": row})
@@ -205,7 +205,7 @@ async def main(queue, args):
                     " WHERE QUERY_TEXT ILIKE '%GRANT ROLE%'"
                     " AND START_TIME >= '{0}'::TIMESTAMP_LTZ"
                     " ORDER BY START_TIME DESC LIMIT 100"
-                ).format(last_poll)  # noqa: S608 - timestamp from datetime.now(), not user input
+                ).format(last_poll)
                 rows = _execute_query(account, token, sql, auth_type, role, warehouse)
                 for row in rows:
                     await queue.put({"type": "role_change", "data": row})
@@ -216,7 +216,7 @@ async def main(queue, args):
                     " WHERE ERROR_CODE = 390318"
                     " AND EVENT_TIMESTAMP >= '{0}'::TIMESTAMP_LTZ"
                     " ORDER BY EVENT_TIMESTAMP DESC LIMIT 100"
-                ).format(last_poll)  # noqa: S608 - timestamp from datetime.now(), not user input
+                ).format(last_poll)
                 rows = _execute_query(account, token, sql, auth_type, role, warehouse)
                 for row in rows:
                     await queue.put({"type": "network_policy_violation", "data": row})
@@ -228,7 +228,7 @@ async def main(queue, args):
                     " WHERE START_TIME >= '{0}'::TIMESTAMP_LTZ"
                     " GROUP BY WAREHOUSE_NAME"
                     " HAVING SUM(CREDITS_USED) > {1}"
-                ).format(last_poll, credit_threshold)  # noqa: S608 - internally generated values
+                ).format(last_poll, credit_threshold)
                 rows = _execute_query(account, token, sql, auth_type, role, warehouse)
                 for row in rows:
                     await queue.put({"type": "warehouse_credit_exceeded", "data": row})
