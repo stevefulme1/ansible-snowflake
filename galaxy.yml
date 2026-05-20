@@ -10,7 +10,6 @@ description: >-
   the SQL REST API. Pre-release, under active development.
 license:
   - GPL-3.0-or-later
-license_file: ''
 tags:
   - snowflake
   - datawarehouse
