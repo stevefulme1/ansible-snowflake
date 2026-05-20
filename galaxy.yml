@@ -5,7 +5,9 @@ version: 0.1.0
 readme: README.md
 authors:
   - Steve Fulmer (@stevefulme1)
-description: Ansible collection for managing Snowflake data warehouse resources via the SQL REST API. Status: Pre-release. Under active development.
+description: >-
+  Ansible collection for managing Snowflake data warehouse resources via
+  the SQL REST API. Pre-release, under active development.
 license:
   - GPL-3.0-or-later
 license_file: ''
