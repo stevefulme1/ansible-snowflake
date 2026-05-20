@@ -1,44 +1,27 @@
-# Contributing
+# WELCOME TO ANSIBLE GITHUB
 
-Contributions are welcome! Please follow these guidelines.
+Hi! Nice to see you here!
 
-## How to Contribute
+## QUESTIONS ?
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Make your changes
-4. Run linting and tests:
-   ```bash
-   ansible-lint
-   ansible-test sanity
-   ansible-test units
-   ```
-5. Commit your changes (`git commit -m 'Add my feature'`)
-6. Push to the branch (`git push origin feature/my-feature`)
-7. Open a Pull Request
+Please see the [Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) for information on how to ask questions on the [mailing lists](https://docs.ansible.com/ansible/latest/community/communication.html#mailing-list-information) and IRC.
 
-## Development Setup
+The GitHub issue tracker is not the best place for questions for various reasons, but both IRC and the mailing list are very helpful places for those things, as the community page explains best.
 
-```bash
-pip install ansible-core ansible-lint
-```
+## CONTRIBUTING ?
 
-## Code Standards
+By contributing to this project you agree to the Developer Certificate of Origin (DCO). This document was created by the Linux Kernel community and is a simple statement that you, as a contributor, have the legal right to make the contribution.
 
-- All modules must include `DOCUMENTATION`, `EXAMPLES`, and `RETURN` docstrings
-- All modules must have a GPL-3.0-or-later license header
-- Sensitive parameters must use `no_log=True`
-- SSL validation must default to `True` (`validate_certs`)
-- Follow [Ansible module development guidelines](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules.html)
+You can read more about the [DCO and Contributor License Agreements](https://docs.ansible.com/ansible/latest/community/collection_contributors/collection_requirements.html#contributor-license-agreements) on the Ansible docsite.
 
-## Reporting Issues
+Please review the [Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) for more information on contributing to Ansible.
 
-Please open a GitHub issue with:
-- Clear description of the problem
-- Steps to reproduce
-- Expected vs actual behavior
-- Ansible and Python versions
+## BUG TO REPORT ?
 
-## Code of Conduct
+First and foremost, also check the [Community Guide](https://docs.ansible.com/ansible/latest/community/index.html).
 
-Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+You can report bugs or make enhancement requests at the [Ansible GitHub issue page](http://github.com/ansible/ansible/issues/new/choose) by filling out the issue template that will be presented.
+
+Also please make sure you are testing on the latest released version of Ansible or the development branch; see the [Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for details.
+
+Thanks!
