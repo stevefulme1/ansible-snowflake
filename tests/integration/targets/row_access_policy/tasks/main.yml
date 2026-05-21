@@ -1,0 +1,81 @@
+---
+# Integration tests for stevefulme1.snowflake.row_access_policy
+# Requires: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+
+- name: Set test resource name
+  ansible.builtin.set_fact:
+    test_name: "ANSIBLE_TEST_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+
+- name: Create row_access_policy
+  stevefulme1.snowflake.row_access_policy:
+    name: "{{ test_name }}"
+    signature: "(val VARCHAR)"
+    returns: BOOLEAN
+    body: "true"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: create_result
+
+- name: Verify creation
+  ansible.builtin.assert:
+    that:
+      - create_result is changed
+
+- name: Create row_access_policy again (idempotency)
+  stevefulme1.snowflake.row_access_policy:
+    name: "{{ test_name }}"
+    signature: "(val VARCHAR)"
+    returns: BOOLEAN
+    body: "true"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: idem_result
+
+- name: Verify idempotency
+  ansible.builtin.assert:
+    that:
+      - idem_result is not changed
+
+- name: Update row_access_policy
+  stevefulme1.snowflake.row_access_policy:
+    name: "{{ test_name }}"
+    body: "CASE WHEN CURRENT_ROLE() = 'SYSADMIN' THEN true ELSE false END"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: update_result
+
+- name: Verify update
+  ansible.builtin.assert:
+    that:
+      - update_result is changed
+
+- name: Delete row_access_policy
+  stevefulme1.snowflake.row_access_policy:
+    name: "{{ test_name }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_result
+
+- name: Verify deletion
+  ansible.builtin.assert:
+    that:
+      - delete_result is changed
+
+- name: Delete row_access_policy again (idempotency)
+  stevefulme1.snowflake.row_access_policy:
+    name: "{{ test_name }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_idem
+
+- name: Verify delete idempotency
+  ansible.builtin.assert:
+    that:
+      - delete_idem is not changed

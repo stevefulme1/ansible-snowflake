@@ -1,0 +1,87 @@
+---
+# Integration tests for stevefulme1.snowflake.object_parameter
+# Requires: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+
+- name: Set test resource name
+  ansible.builtin.set_fact:
+    test_name: "ANSIBLE_TEST_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+
+- name: Create object_parameter
+  stevefulme1.snowflake.object_parameter:
+    object_type: WAREHOUSE
+    object_name: COMPUTE_WH
+    parameter_name: STATEMENT_TIMEOUT_IN_SECONDS
+    parameter_value: "300"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: create_result
+
+- name: Verify creation
+  ansible.builtin.assert:
+    that:
+      - create_result is changed
+
+- name: Create object_parameter again (idempotency)
+  stevefulme1.snowflake.object_parameter:
+    object_type: WAREHOUSE
+    object_name: COMPUTE_WH
+    parameter_name: STATEMENT_TIMEOUT_IN_SECONDS
+    parameter_value: "300"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: idem_result
+
+- name: Verify idempotency
+  ansible.builtin.assert:
+    that:
+      - idem_result is not changed
+
+- name: Update object_parameter
+  stevefulme1.snowflake.object_parameter:
+    object_type: WAREHOUSE
+    object_name: COMPUTE_WH
+    parameter_name: STATEMENT_TIMEOUT_IN_SECONDS
+    parameter_value: "600"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: update_result
+
+- name: Verify update
+  ansible.builtin.assert:
+    that:
+      - update_result is changed
+
+- name: Delete object_parameter
+  stevefulme1.snowflake.object_parameter:
+    object_type: WAREHOUSE
+    object_name: COMPUTE_WH
+    parameter_name: STATEMENT_TIMEOUT_IN_SECONDS
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_result
+
+- name: Verify deletion
+  ansible.builtin.assert:
+    that:
+      - delete_result is changed
+
+- name: Delete object_parameter again (idempotency)
+  stevefulme1.snowflake.object_parameter:
+    object_type: WAREHOUSE
+    object_name: COMPUTE_WH
+    parameter_name: STATEMENT_TIMEOUT_IN_SECONDS
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_idem
+
+- name: Verify delete idempotency
+  ansible.builtin.assert:
+    that:
+      - delete_idem is not changed

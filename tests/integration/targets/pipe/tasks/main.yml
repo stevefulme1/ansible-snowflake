@@ -1,0 +1,104 @@
+---
+# Integration tests for stevefulme1.snowflake.pipe
+# Requires: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY
+
+- name: Set test resource name
+  ansible.builtin.set_fact:
+    test_name: "ANSIBLE_TEST_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+    test_db: "ANSIBLE_TEST_DB_{{ lookup('password', '/dev/null chars=ascii_uppercase length=6') }}"
+
+- name: Create test database
+  stevefulme1.snowflake.database:
+    name: "{{ test_db }}"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+
+
+- name: Create pipe
+  stevefulme1.snowflake.pipe:
+    name: "{{ test_name }}"
+    schema_name: PUBLIC
+    database_name: "{{ test_db }}"
+    copy_statement: "COPY INTO {{ test_db }}.PUBLIC.test_table FROM @{{ test_db }}.PUBLIC.test_stage"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: create_result
+
+- name: Verify creation
+  ansible.builtin.assert:
+    that:
+      - create_result is changed
+
+- name: Create pipe again (idempotency)
+  stevefulme1.snowflake.pipe:
+    name: "{{ test_name }}"
+    schema_name: PUBLIC
+    database_name: "{{ test_db }}"
+    copy_statement: "COPY INTO {{ test_db }}.PUBLIC.test_table FROM @{{ test_db }}.PUBLIC.test_stage"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: idem_result
+
+- name: Verify idempotency
+  ansible.builtin.assert:
+    that:
+      - idem_result is not changed
+
+- name: Update pipe
+  stevefulme1.snowflake.pipe:
+    name: "{{ test_name }}"
+    schema_name: PUBLIC
+    database_name: "{{ test_db }}"
+    comment: "Updated pipe"
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: update_result
+
+- name: Verify update
+  ansible.builtin.assert:
+    that:
+      - update_result is changed
+
+- name: Delete pipe
+  stevefulme1.snowflake.pipe:
+    name: "{{ test_name }}"
+    schema_name: PUBLIC
+    database_name: "{{ test_db }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_result
+
+- name: Verify deletion
+  ansible.builtin.assert:
+    that:
+      - delete_result is changed
+
+- name: Delete pipe again (idempotency)
+  stevefulme1.snowflake.pipe:
+    name: "{{ test_name }}"
+    schema_name: PUBLIC
+    database_name: "{{ test_db }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
+  register: delete_idem
+
+- name: Verify delete idempotency
+  ansible.builtin.assert:
+    that:
+      - delete_idem is not changed
+
+- name: Drop test database
+  stevefulme1.snowflake.database:
+    name: "{{ test_db }}"
+    state: absent
+    account: "{{ snowflake_account }}"
+    user: "{{ snowflake_user }}"
+    private_key: "{{ snowflake_private_key }}"
